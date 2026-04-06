@@ -1,0 +1,372 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Reklamace #{{ complaint_id }} - Reklamace Proteinaco{% endblock %}
+
+{% block extra_css %}
+    .photo-lightbox {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.85);
+        z-index: 300;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+    .photo-lightbox.active { display: flex; }
+    .photo-lightbox img {
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 8px;
+    }
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:16px;">
+    <a href="/admin/complaints" style="font-size:0.9rem;">&larr; Zpet na seznam</a>
+</div>
+
+<div id="detail-loading" class="loading-spinner">Nacitam...</div>
+
+<div id="detail-content" style="display:none;">
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
+        <h1 style="font-size:1.5rem;" id="detail-code"></h1>
+        <span id="detail-status-badge"></span>
+    </div>
+
+    <div class="grid-2">
+        <!-- Left column: info -->
+        <div>
+            <!-- Customer info -->
+            <div class="card">
+                <div class="card-header">Zakaznik</div>
+                <table>
+                    <tr><td style="width:140px; color:#777;">Jmeno</td><td id="detail-name"></td></tr>
+                    <tr><td style="color:#777;">Email</td><td id="detail-email"></td></tr>
+                    <tr><td style="color:#777;">Telefon</td><td id="detail-phone"></td></tr>
+                    <tr><td style="color:#777;">Bankovni ucet</td><td id="detail-bank"></td></tr>
+                </table>
+            </div>
+
+            <!-- Order info -->
+            <div class="card">
+                <div class="card-header">Objednavka</div>
+                <table>
+                    <tr><td style="width:140px; color:#777;">Kod objednavky</td><td id="detail-order-code"></td></tr>
+                    <tr><td style="color:#777;">Preferovane reseni</td><td id="detail-resolution"></td></tr>
+                    <tr><td style="color:#777;">Sledovaci cislo</td><td id="detail-tracking"></td></tr>
+                </table>
+            </div>
+
+            <!-- Items -->
+            <div class="card">
+                <div class="card-header">Polozky</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Produkt</th>
+                            <th>Mnozstvi</th>
+                            <th class="text-right">Cena/ks</th>
+                            <th>Popis problemu</th>
+                            <th>Davky</th>
+                            <th>Zjisteno</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detail-items"></tbody>
+                </table>
+            </div>
+
+            <!-- Photos -->
+            <div class="card" id="photos-card" style="display:none;">
+                <div class="card-header">Fotografie</div>
+                <div class="photo-gallery" id="detail-photos"></div>
+            </div>
+        </div>
+
+        <!-- Right column: timeline + actions -->
+        <div>
+            <!-- Actions -->
+            <div class="card" id="actions-card">
+                <div class="card-header">Akce</div>
+                <div id="actions-buttons" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+                <div class="form-group mt-16" id="admin-note-group">
+                    <label>Poznamka admina</label>
+                    <textarea class="form-control" id="detail-admin-note" placeholder="Interni poznamka..."></textarea>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="card">
+                <div class="card-header">Historie stavu</div>
+                <div class="timeline" id="detail-timeline"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request info modal -->
+<div class="modal-overlay" id="request-info-modal">
+    <div class="modal-box">
+        <h3>Vyzadat doplneni informaci</h3>
+        <div class="form-group">
+            <label for="request-info-message">Zprava zakaznikovi</label>
+            <textarea class="form-control" id="request-info-message" placeholder="Popiste, jake informace potrebujete..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal('request-info-modal')">Zrusit</button>
+            <button class="btn btn-primary" onclick="doRequestInfo()">Odeslat</button>
+        </div>
+    </div>
+</div>
+
+<!-- Approve modal -->
+<div class="modal-overlay" id="approve-modal">
+    <div class="modal-box">
+        <h3>Schvalit reklamaci</h3>
+        <div class="form-group">
+            <label for="approve-resolution">Typ reseni</label>
+            <select class="form-control" id="approve-resolution">
+                <option value="discount">Sleva</option>
+                <option value="new_product">Novy produkt</option>
+                <option value="refund">Vraceni penez</option>
+                <option value="other">Jine</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="approve-note">Poznamka (volitelne)</label>
+            <textarea class="form-control" id="approve-note" placeholder="Podrobnosti k reseni..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal('approve-modal')">Zrusit</button>
+            <button class="btn btn-success" onclick="doApprove()">Schvalit</button>
+        </div>
+    </div>
+</div>
+
+<!-- Reject modal -->
+<div class="modal-overlay" id="reject-modal">
+    <div class="modal-box">
+        <h3>Zamitnout reklamaci</h3>
+        <div class="form-group">
+            <label for="reject-reason">Duvod zamitnuti</label>
+            <textarea class="form-control" id="reject-reason" placeholder="Zadejte duvod..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal('reject-modal')">Zrusit</button>
+            <button class="btn btn-danger" onclick="doReject()">Zamitnout</button>
+        </div>
+    </div>
+</div>
+
+<!-- Photo lightbox -->
+<div class="photo-lightbox" id="photo-lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" alt="Fotografie">
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var complaintId = {{ complaint_id }};
+var complaintData = null;
+
+async function loadDetail() {
+    var data = await apiGet('/api/v1/admin/complaints/' + complaintId);
+    if (!data) return;
+    complaintData = data;
+    renderDetail(data);
+}
+
+function renderDetail(d) {
+    document.getElementById('detail-code').textContent = d.code;
+    document.getElementById('detail-status-badge').innerHTML = statusBadge(d.status);
+    document.getElementById('detail-name').textContent = d.customer_name || '-';
+    document.getElementById('detail-email').textContent = d.customer_email || '-';
+    document.getElementById('detail-phone').textContent = d.customer_phone || '-';
+    document.getElementById('detail-bank').textContent = d.bank_account || '-';
+    document.getElementById('detail-order-code').textContent = d.order_code || '-';
+    document.getElementById('detail-resolution').textContent = resolutionLabel(d.preferred_resolution);
+    document.getElementById('detail-tracking').textContent = d.tracking_number || '-';
+    document.getElementById('detail-admin-note').value = d.admin_note || '';
+
+    // Set preferred resolution in approve modal
+    if (d.preferred_resolution) {
+        var approveSelect = document.getElementById('approve-resolution');
+        if (approveSelect) approveSelect.value = d.preferred_resolution;
+    }
+
+    // Items
+    var itemsBody = document.getElementById('detail-items');
+    itemsBody.innerHTML = '';
+    (d.items || []).forEach(function(item) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td><strong>' + escapeHtml(item.product_name) + '</strong><br><span class="text-muted" style="font-size:0.8rem;">' + escapeHtml(item.product_code) + '</span></td>' +
+            '<td>' + item.quantity + '</td>' +
+            '<td class="text-right">' + formatCurrency(item.unit_price) + '</td>' +
+            '<td>' + escapeHtml(item.problem_description || '-') + '</td>' +
+            '<td>' + (item.doses_taken != null ? item.doses_taken : '-') + '</td>' +
+            '<td>' + (item.discovery_date ? formatDateShort(item.discovery_date) : '-') + '</td>';
+        itemsBody.appendChild(tr);
+    });
+
+    // Photos
+    if (d.photos && d.photos.length > 0) {
+        document.getElementById('photos-card').style.display = 'block';
+        var photosContainer = document.getElementById('detail-photos');
+        photosContainer.innerHTML = '';
+        d.photos.forEach(function(photo) {
+            var imgUrl = '/api/v1/complaints/' + complaintId + '/photos/' + photo.id;
+            var img = document.createElement('img');
+            img.className = 'photo-thumb';
+            img.src = imgUrl;
+            img.alt = photo.original_filename || 'Foto';
+            img.title = photo.original_filename || 'Foto';
+            img.onclick = function() { openLightbox(imgUrl); };
+            photosContainer.appendChild(img);
+        });
+    }
+
+    // Timeline
+    renderTimeline(d.status_history || []);
+
+    // Actions
+    renderActions(d.status);
+
+    document.getElementById('detail-loading').style.display = 'none';
+    document.getElementById('detail-content').style.display = 'block';
+}
+
+function renderTimeline(history) {
+    var container = document.getElementById('detail-timeline');
+    container.innerHTML = '';
+    var sorted = history.slice().reverse();
+    sorted.forEach(function(entry) {
+        var div = document.createElement('div');
+        div.className = 'timeline-item';
+        div.innerHTML =
+            '<div class="timeline-date">' + formatDate(entry.created_at) + '</div>' +
+            '<div class="timeline-status">' +
+                (entry.old_status ? statusBadge(entry.old_status) + ' &rarr; ' : '') +
+                statusBadge(entry.new_status) +
+            '</div>' +
+            (entry.note ? '<div class="timeline-note">' + escapeHtml(entry.note) + '</div>' : '') +
+            (entry.changed_by ? '<div class="timeline-user">' + escapeHtml(entry.changed_by) + '</div>' : '');
+        container.appendChild(div);
+    });
+    if (sorted.length === 0) {
+        container.innerHTML = '<span class="text-muted">Zadna historie.</span>';
+    }
+}
+
+function renderActions(status) {
+    var container = document.getElementById('actions-buttons');
+    container.innerHTML = '';
+
+    // Request more info - available in most non-terminal states
+    if (['new', 'waiting_for_assessment', 'assessing'].indexOf(status) !== -1) {
+        addActionBtn(container, 'Vyzadat doplneni', 'btn-warning', function() {
+            openModal('request-info-modal');
+        });
+    }
+
+    if (status === 'new' || status === 'waiting_for_assessment') {
+        addActionBtn(container, 'Zahajit posouzeni', 'btn-primary', function() {
+            if (confirm('Opravdu zahajit posouzeni?')) doAction('start-assessment');
+        });
+    }
+
+    if (status === 'assessing') {
+        addActionBtn(container, 'Schvalit', 'btn-success', function() {
+            openModal('approve-modal');
+        });
+        addActionBtn(container, 'Zamitnout', 'btn-danger', function() {
+            openModal('reject-modal');
+        });
+    }
+
+    if (status === 'approved') {
+        addActionBtn(container, 'Vyresit', 'btn-success', function() {
+            if (confirm('Potvrdit vyreseni reklamace?')) doAction('resolve');
+        });
+    }
+
+    if (container.innerHTML === '') {
+        container.innerHTML = '<span class="text-muted">Zadne dostupne akce pro tento stav.</span>';
+    }
+}
+
+function addActionBtn(container, label, cls, handler) {
+    var btn = document.createElement('button');
+    btn.className = 'btn ' + cls;
+    btn.textContent = label;
+    btn.onclick = handler;
+    container.appendChild(btn);
+}
+
+async function doAction(action) {
+    var data = await apiPost('/api/v1/admin/complaints/' + complaintId + '/' + action);
+    if (data) {
+        showSuccess('Akce provedena uspesne.');
+        loadDetail();
+    }
+}
+
+async function doRequestInfo() {
+    var message = document.getElementById('request-info-message').value.trim();
+    if (!message) {
+        showError('Zprava je povinna.');
+        return;
+    }
+    var data = await apiPost('/api/v1/admin/complaints/' + complaintId + '/request-info', { message: message });
+    if (data) {
+        closeModal('request-info-modal');
+        document.getElementById('request-info-message').value = '';
+        showSuccess('Zadost o doplneni odeslana.');
+        loadDetail();
+    }
+}
+
+async function doApprove() {
+    var resolution = document.getElementById('approve-resolution').value;
+    var note = document.getElementById('approve-note').value.trim();
+    var body = { resolution: resolution };
+    if (note) body.note = note;
+    var data = await apiPost('/api/v1/admin/complaints/' + complaintId + '/approve', body);
+    if (data) {
+        closeModal('approve-modal');
+        showSuccess('Reklamace schvalena.');
+        loadDetail();
+    }
+}
+
+async function doReject() {
+    var reason = document.getElementById('reject-reason').value.trim();
+    if (!reason) {
+        showError('Duvod je povinny.');
+        return;
+    }
+    var data = await apiPost('/api/v1/admin/complaints/' + complaintId + '/reject', { reason: reason });
+    if (data) {
+        closeModal('reject-modal');
+        showSuccess('Reklamace zamitnuta.');
+        loadDetail();
+    }
+}
+
+/* Lightbox */
+function openLightbox(url) {
+    document.getElementById('lightbox-img').src = url;
+    document.getElementById('photo-lightbox').classList.add('active');
+}
+function closeLightbox() {
+    document.getElementById('photo-lightbox').classList.remove('active');
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+});
+
+loadDetail();
+</script>
+{% endblock %}

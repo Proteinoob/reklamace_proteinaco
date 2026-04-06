@@ -1,0 +1,153 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Vratky - Reklamace Proteinaco{% endblock %}
+
+{% block content %}
+<h1 style="font-size:1.5rem; margin-bottom:24px;">Vratky</h1>
+
+<!-- Filters -->
+<div class="filters-bar">
+    <div class="form-group">
+        <label for="filter-status">Stav</label>
+        <select id="filter-status" class="form-control" style="width:200px;">
+            <option value="">Vsechny</option>
+            <option value="new">Novy</option>
+            <option value="waiting_for_delivery">Ceka na doruceni</option>
+            <option value="received_inspecting">Prijato / kontrola</option>
+            <option value="approved">Schvaleno</option>
+            <option value="refund_ready">K vraceni penez</option>
+            <option value="rejected">Zamitnuto</option>
+            <option value="completed">Dokonceno</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="filter-order">Kod objednavky</label>
+        <input type="text" id="filter-order" class="form-control" style="width:180px;" placeholder="Napiste kod...">
+    </div>
+    <div class="form-group">
+        <button class="btn btn-primary btn-sm" onclick="loadReturns(1)">Filtrovat</button>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+    <div id="returns-loading" class="loading-spinner">Nacitam...</div>
+    <div id="returns-content" style="display:none;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Kod</th>
+                    <th>Objednavka</th>
+                    <th>Zakaznik</th>
+                    <th>Stav</th>
+                    <th class="text-right">Castka</th>
+                    <th>Doba v stavu</th>
+                    <th>Vytvoreno</th>
+                </tr>
+            </thead>
+            <tbody id="returns-tbody"></tbody>
+        </table>
+        <div class="pagination" id="returns-pagination"></div>
+    </div>
+    <div id="returns-empty" style="display:none; text-align:center; padding:40px; color:#999;">
+        Zadne vratky k zobrazeni.
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var currentPage = 1;
+var pageSize = 20;
+
+// Read initial filters from URL params
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('status')) {
+        document.getElementById('filter-status').value = params.get('status');
+    }
+    if (params.get('order_code')) {
+        document.getElementById('filter-order').value = params.get('order_code');
+    }
+})();
+
+async function loadReturns(page) {
+    currentPage = page || 1;
+    var status = document.getElementById('filter-status').value;
+    var orderCode = document.getElementById('filter-order').value.trim();
+
+    var params = new URLSearchParams();
+    params.set('page', currentPage);
+    params.set('page_size', pageSize);
+    if (status) params.set('status', status);
+    if (orderCode) params.set('order_code', orderCode);
+
+    document.getElementById('returns-loading').style.display = 'block';
+    document.getElementById('returns-content').style.display = 'none';
+    document.getElementById('returns-empty').style.display = 'none';
+
+    var data = await apiGet('/api/v1/admin/returns?' + params.toString());
+    document.getElementById('returns-loading').style.display = 'none';
+
+    if (!data) return;
+
+    if (!data.items || data.items.length === 0) {
+        document.getElementById('returns-empty').style.display = 'block';
+        return;
+    }
+
+    var tbody = document.getElementById('returns-tbody');
+    tbody.innerHTML = '';
+    data.items.forEach(function(item) {
+        var tr = document.createElement('tr');
+        tr.className = 'clickable-row';
+        tr.onclick = function() { window.location.href = '/admin/returns/' + item.id; };
+        tr.innerHTML =
+            '<td><strong>' + escapeHtml(item.code) + '</strong></td>' +
+            '<td>' + escapeHtml(item.order_code) + '</td>' +
+            '<td>' + escapeHtml(item.customer_name) + '<br><span class="text-muted" style="font-size:0.8rem;">' + escapeHtml(item.customer_email) + '</span></td>' +
+            '<td>' + statusBadge(item.status) + '</td>' +
+            '<td class="text-right">' + formatCurrency(item.total_refund_amount) + '</td>' +
+            '<td><span class="' + slaClass(item.days_in_current_status) + '">' + item.days_in_current_status + ' dni</span></td>' +
+            '<td>' + formatDateShort(item.created_at) + '</td>';
+        tbody.appendChild(tr);
+    });
+
+    // Pagination
+    renderPagination('returns-pagination', data.total, currentPage, pageSize, loadReturns);
+    document.getElementById('returns-content').style.display = 'block';
+}
+
+function renderPagination(containerId, total, page, size, callback) {
+    var container = document.getElementById(containerId);
+    container.innerHTML = '';
+    var totalPages = Math.ceil(total / size);
+    if (totalPages <= 1) return;
+
+    var prevBtn = document.createElement('button');
+    prevBtn.textContent = 'Predchozi';
+    prevBtn.disabled = page <= 1;
+    prevBtn.onclick = function() { callback(page - 1); };
+    container.appendChild(prevBtn);
+
+    var info = document.createElement('span');
+    info.className = 'page-info';
+    info.textContent = 'Strana ' + page + ' z ' + totalPages + ' (' + total + ' zaznamu)';
+    container.appendChild(info);
+
+    var nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Dalsi';
+    nextBtn.disabled = page >= totalPages;
+    nextBtn.onclick = function() { callback(page + 1); };
+    container.appendChild(nextBtn);
+}
+
+// Allow Enter key in order code input
+document.getElementById('filter-order').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') loadReturns(1);
+});
+
+// Initial load
+loadReturns(1);
+</script>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard - Reklamace Proteinaco{% endblock %}
+
+{% block content %}
+<h1 style="font-size:1.5rem; margin-bottom:24px;">Dashboard</h1>
+
+<!-- Summary stats -->
+<div class="grid-2 mb-16" id="summary-stats">
+    <div class="card">
+        <div style="display:flex; gap:20px; justify-content:space-around; text-align:center;">
+            <div>
+                <div class="stat-number highlight-orange" id="stat-action">-</div>
+                <div class="stat-label">Vyzaduje akci</div>
+            </div>
+            <div>
+                <div class="stat-number highlight-red" id="stat-sla">-</div>
+                <div class="stat-label">SLA prekroceno</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Returns + Complaints cards -->
+<div class="grid-2">
+    <!-- Returns card -->
+    <div class="card">
+        <div class="card-header">Vratky</div>
+        <div id="returns-loading" class="loading-spinner">Nacitam...</div>
+        <div id="returns-stats" style="display:none;">
+            <table>
+                <thead>
+                    <tr><th>Stav</th><th class="text-right">Pocet</th></tr>
+                </thead>
+                <tbody id="returns-table-body"></tbody>
+                <tfoot>
+                    <tr style="font-weight:700; border-top:2px solid #ddd;">
+                        <td>Celkem</td>
+                        <td class="text-right" id="returns-total">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div style="margin-top:16px;">
+                <a href="/admin/returns" class="btn btn-primary btn-sm">Zobrazit vsechny vratky</a>
+                <a href="/admin/returns?status=new" class="btn btn-warning btn-sm" style="margin-left:8px;">Nove</a>
+                <a href="/admin/returns?status=received_inspecting" class="btn btn-secondary btn-sm" style="margin-left:8px;">Ke kontrole</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complaints card -->
+    <div class="card">
+        <div class="card-header">Reklamace</div>
+        <div id="complaints-loading" class="loading-spinner">Nacitam...</div>
+        <div id="complaints-stats" style="display:none;">
+            <table>
+                <thead>
+                    <tr><th>Stav</th><th class="text-right">Pocet</th></tr>
+                </thead>
+                <tbody id="complaints-table-body"></tbody>
+                <tfoot>
+                    <tr style="font-weight:700; border-top:2px solid #ddd;">
+                        <td>Celkem</td>
+                        <td class="text-right" id="complaints-total">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div style="margin-top:16px;">
+                <a href="/admin/complaints" class="btn btn-primary btn-sm">Zobrazit vsechny reklamace</a>
+                <a href="/admin/complaints?status=new" class="btn btn-warning btn-sm" style="margin-left:8px;">Nove</a>
+                <a href="/admin/complaints?status=assessing" class="btn btn-secondary btn-sm" style="margin-left:8px;">Posuzovane</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(async function() {
+    var data = await apiGet('/api/v1/admin/dashboard');
+    if (!data) return;
+
+    // Summary stats
+    document.getElementById('stat-action').textContent = data.action_required || 0;
+    document.getElementById('stat-sla').textContent = data.sla_breached || 0;
+
+    // Returns table
+    var RETURN_STATUS_ORDER = [
+        'new', 'waiting_for_delivery', 'received_inspecting',
+        'approved', 'refund_ready', 'rejected', 'completed'
+    ];
+    var returnsBody = document.getElementById('returns-table-body');
+    var returnsTotal = 0;
+    RETURN_STATUS_ORDER.forEach(function(s) {
+        var count = (data.returns && data.returns[s]) || 0;
+        returnsTotal += count;
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + statusBadge(s) + '</td><td class="text-right">' + count + '</td>';
+        if (count > 0) {
+            tr.style.cursor = 'pointer';
+            tr.onclick = function() { window.location.href = '/admin/returns?status=' + s; };
+        }
+        returnsBody.appendChild(tr);
+    });
+    document.getElementById('returns-total').textContent = returnsTotal;
+    document.getElementById('returns-loading').style.display = 'none';
+    document.getElementById('returns-stats').style.display = 'block';
+
+    // Complaints table
+    var COMPLAINT_STATUS_ORDER = [
+        'new', 'waiting_for_assessment', 'need_more_info',
+        'assessing', 'approved', 'rejected', 'resolved'
+    ];
+    var complaintsBody = document.getElementById('complaints-table-body');
+    var complaintsTotal = 0;
+    COMPLAINT_STATUS_ORDER.forEach(function(s) {
+        var count = (data.complaints && data.complaints[s]) || 0;
+        complaintsTotal += count;
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + statusBadge(s) + '</td><td class="text-right">' + count + '</td>';
+        if (count > 0) {
+            tr.style.cursor = 'pointer';
+            tr.onclick = function() { window.location.href = '/admin/complaints?status=' + s; };
+        }
+        complaintsBody.appendChild(tr);
+    });
+    document.getElementById('complaints-total').textContent = complaintsTotal;
+    document.getElementById('complaints-loading').style.display = 'none';
+    document.getElementById('complaints-stats').style.display = 'block';
+})();
+</script>
+{% endblock %}

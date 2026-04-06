@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Reklamace Proteinaco{% endblock %}</title>
+    <style>
+        /* Reset & base */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+        a { color: #1a7f5a; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Navbar */
+        .navbar {
+            background: #1a7f5a;
+            color: #fff;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            height: 56px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar-brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-right: 32px;
+            white-space: nowrap;
+        }
+        .navbar-brand:hover { text-decoration: none; opacity: 0.9; }
+        .navbar-nav {
+            display: flex;
+            list-style: none;
+            gap: 4px;
+        }
+        .navbar-nav a {
+            color: rgba(255,255,255,0.85);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background 0.15s, color 0.15s;
+        }
+        .navbar-nav a:hover, .navbar-nav a.active {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            text-decoration: none;
+        }
+        .navbar-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255,255,255,0.9);
+            font-size: 0.85rem;
+        }
+        .navbar-right .admin-name { font-weight: 600; }
+
+        /* Container */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Cards */
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #777;
+            font-weight: 600;
+            background: #fafbfc;
+        }
+        tr.clickable-row { cursor: pointer; transition: background 0.1s; }
+        tr.clickable-row:hover { background: #f0faf5; }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .status-new { background: #e3f2fd; color: #1565c0; }
+        .status-waiting { background: #fff3e0; color: #e65100; }
+        .status-received, .status-assessing { background: #f3e5f5; color: #7b1fa2; }
+        .status-approved { background: #e8f5e9; color: #2e7d32; }
+        .status-rejected { background: #fce4ec; color: #c62828; }
+        .status-completed, .status-resolved { background: #eceff1; color: #546e7a; }
+        .status-need_more_info { background: #fff8e1; color: #f57f17; }
+        .status-refund_ready { background: #e0f7fa; color: #00695c; }
+
+        /* SLA indicators */
+        .sla-ok { color: #2e7d32; font-weight: 600; }
+        .sla-warning { color: #e65100; font-weight: 600; }
+        .sla-danger { color: #c62828; font-weight: 700; }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s, transform 0.1s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: #1a7f5a; color: #fff; }
+        .btn-success { background: #2e7d32; color: #fff; }
+        .btn-danger { background: #c62828; color: #fff; }
+        .btn-warning { background: #e65100; color: #fff; }
+        .btn-secondary { background: #78909c; color: #fff; }
+        .btn-sm { padding: 5px 12px; font-size: 0.82rem; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Forms */
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #555;
+        }
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: #fff;
+            transition: border-color 0.15s;
+        }
+        .form-control:focus { outline: none; border-color: #1a7f5a; box-shadow: 0 0 0 2px rgba(26,127,90,0.15); }
+        select.form-control { appearance: auto; }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+
+        /* Filters bar */
+        .filters-bar {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .filters-bar .form-group { margin-bottom: 0; }
+
+        /* Modal overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .modal-box h3 { margin-bottom: 16px; }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* Timeline */
+        .timeline { position: relative; padding-left: 28px; }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 4px;
+            bottom: 4px;
+            width: 2px;
+            background: #ddd;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 18px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 6px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #1a7f5a;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px #1a7f5a;
+        }
+        .timeline-date {
+            font-size: 0.78rem;
+            color: #999;
+            margin-bottom: 2px;
+        }
+        .timeline-status {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .timeline-note {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 2px;
+        }
+        .timeline-user {
+            font-size: 0.78rem;
+            color: #aaa;
+        }
+
+        /* Photos gallery */
+        .photo-gallery {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .photo-thumb {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid #eee;
+            transition: border-color 0.15s, transform 0.15s;
+        }
+        .photo-thumb:hover { border-color: #1a7f5a; transform: scale(1.05); }
+
+        /* Utility */
+        .text-muted { color: #999; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .font-bold { font-weight: 700; }
+        .mb-8 { margin-bottom: 8px; }
+        .mb-16 { margin-bottom: 16px; }
+        .mt-16 { margin-top: 16px; }
+        .flex { display: flex; }
+        .flex-gap { gap: 16px; }
+        .flex-wrap { flex-wrap: wrap; }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: #777;
+            margin-top: 4px;
+        }
+        .highlight-red { color: #c62828; }
+        .highlight-green { color: #2e7d32; }
+        .highlight-orange { color: #e65100; }
+
+        /* Loading & error */
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .error-message {
+            background: #fce4ec;
+            color: #c62828;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            padding: 6px 14px;
+            border: 1px solid #ddd;
+            background: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .pagination button:hover { background: #f0faf5; border-color: #1a7f5a; }
+        .pagination button.active { background: #1a7f5a; color: #fff; border-color: #1a7f5a; }
+        .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .pagination .page-info { font-size: 0.85rem; color: #777; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .filters-bar { flex-direction: column; }
+            .container { padding: 16px; }
+            .navbar { padding: 0 12px; }
+        }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a class="navbar-brand" href="/admin/">Reklamace Proteinaco</a>
+        <ul class="navbar-nav">
+            <li><a href="/admin/" id="nav-dashboard">Dashboard</a></li>
+            <li><a href="/admin/returns" id="nav-returns">Vratky</a></li>
+            <li><a href="/admin/complaints" id="nav-complaints">Reklamace</a></li>
+        </ul>
+        <div class="navbar-right">
+            <span class="admin-name" id="admin-username">{{ admin.username }}</span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="global-error" class="error-message" style="display:none;"></div>
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+    /* ---------- Auth helpers ---------- */
+    function getAuthToken() {
+        return localStorage.getItem('auth_token') || '';
+    }
+
+    function authHeaders() {
+        return {
+            'Authorization': 'Bearer ' + getAuthToken(),
+            'Content-Type': 'application/json',
+        };
+    }
+
+    async function apiFetch(url, options) {
+        options = options || {};
+        options.headers = Object.assign({}, authHeaders(), options.headers || {});
+        try {
+            var resp = await fetch(url, options);
+            if (resp.status === 401 || resp.status === 403) {
+                showError('Sezeni vyprselo. Presmerujeme na prihlaseni...');
+                setTimeout(function() {
+                    window.location.href = '/admin/';
+                }, 2000);
+                return null;
+            }
+            return resp;
+        } catch (err) {
+            showError('Chyba pripojeni k serveru: ' + err.message);
+            return null;
+        }
+    }
+
+    async function apiGet(url) {
+        var resp = await apiFetch(url);
+        if (!resp) return null;
+        if (!resp.ok) {
+            var data = await resp.json().catch(function() { return {}; });
+            showError(data.detail || 'Chyba serveru (' + resp.status + ')');
+            return null;
+        }
+        return resp.json();
+    }
+
+    async function apiPost(url, body) {
+        var resp = await apiFetch(url, {
+            method: 'POST',
+            body: body ? JSON.stringify(body) : undefined,
+        });
+        if (!resp) return null;
+        if (!resp.ok) {
+            var data = await resp.json().catch(function() { return {}; });
+            showError(data.detail || 'Chyba serveru (' + resp.status + ')');
+            return null;
+        }
+        return resp.json();
+    }
+
+    /* ---------- UI helpers ---------- */
+    function escapeHtml(str) {
+        if (str == null) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function showError(msg) {
+        var el = document.getElementById('global-error');
+        el.textContent = msg;
+        el.style.display = 'block';
+        setTimeout(function() { el.style.display = 'none'; }, 8000);
+    }
+
+    function showSuccess(msg) {
+        var el = document.getElementById('global-error');
+        el.className = 'success-message';
+        el.textContent = msg;
+        el.style.display = 'block';
+        setTimeout(function() {
+            el.style.display = 'none';
+            el.className = 'error-message';
+        }, 4000);
+    }
+
+    /* Status badge rendering */
+    var STATUS_LABELS = {
+        'new': 'Novy',
+        'waiting_for_delivery': 'Ceka na doruceni',
+        'received_inspecting': 'Prijato / kontrola',
+        'approved': 'Schvaleno',
+        'rejected': 'Zamitnuto',
+        'refund_ready': 'K vraceni penez',
+        'completed': 'Dokonceno',
+        'waiting_for_assessment': 'Ceka na posouzeni',
+        'need_more_info': 'Doplneni informaci',
+        'assessing': 'Posuzuje se',
+        'resolved': 'Vyreseno',
+    };
+
+    var STATUS_CSS = {
+        'new': 'status-new',
+        'waiting_for_delivery': 'status-waiting',
+        'received_inspecting': 'status-received',
+        'approved': 'status-approved',
+        'rejected': 'status-rejected',
+        'refund_ready': 'status-refund_ready',
+        'completed': 'status-completed',
+        'waiting_for_assessment': 'status-waiting',
+        'need_more_info': 'status-need_more_info',
+        'assessing': 'status-assessing',
+        'resolved': 'status-resolved',
+    };
+
+    function statusBadge(status) {
+        var label = STATUS_LABELS[status] || status;
+        var css = STATUS_CSS[status] || 'status-new';
+        return '<span class="badge ' + css + '">' + escapeHtml(label) + '</span>';
+    }
+
+    function slaClass(days) {
+        if (days <= 3) return 'sla-ok';
+        if (days <= 7) return 'sla-warning';
+        return 'sla-danger';
+    }
+
+    function formatDate(isoStr) {
+        if (!isoStr) return '-';
+        var d = new Date(isoStr);
+        return d.toLocaleDateString('cs-CZ') + ' ' + d.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatDateShort(isoStr) {
+        if (!isoStr) return '-';
+        return new Date(isoStr).toLocaleDateString('cs-CZ');
+    }
+
+    function formatCurrency(amount) {
+        if (amount == null) return '-';
+        return Number(amount).toLocaleString('cs-CZ', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' Kc';
+    }
+
+    /* Resolution labels */
+    var RESOLUTION_LABELS = {
+        'discount': 'Sleva',
+        'new_product': 'Novy produkt',
+        'refund': 'Vraceni penez',
+        'other': 'Jine',
+    };
+
+    function resolutionLabel(val) {
+        return RESOLUTION_LABELS[val] || val || '-';
+    }
+
+    /* Reason labels */
+    var REASON_LABELS = {
+        'ordered_wrong': 'Spatna objednavka',
+        'not_satisfied': 'Nespokojenost',
+        'other': 'Jine',
+    };
+
+    function reasonLabel(val) {
+        return REASON_LABELS[val] || val || '-';
+    }
+
+    /* Active nav */
+    (function() {
+        var path = window.location.pathname;
+        if (path === '/admin/' || path === '/admin') {
+            var el = document.getElementById('nav-dashboard');
+            if (el) el.classList.add('active');
+        } else if (path.startsWith('/admin/returns')) {
+            var el = document.getElementById('nav-returns');
+            if (el) el.classList.add('active');
+        } else if (path.startsWith('/admin/complaints')) {
+            var el = document.getElementById('nav-complaints');
+            if (el) el.classList.add('active');
+        }
+    })();
+
+    /* Modal helpers */
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

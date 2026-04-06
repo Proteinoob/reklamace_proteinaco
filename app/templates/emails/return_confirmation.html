@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potvrzení vratky</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f6f8; font-family: Arial, Helvetica, sans-serif; color: #333333;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f6f8;">
+        <tr>
+            <td align="center" style="padding: 30px 15px;">
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #1a7f5a; padding: 25px 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: 1px;">PROTEINACO</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            <h2 style="margin: 0 0 20px 0; font-size: 20px; color: #1a7f5a;">Vaše vratka byla přijata</h2>
+
+                            <p style="margin: 0 0 10px 0; font-size: 15px; line-height: 1.6;">
+                                Děkujeme za odeslání žádosti o vrácení zboží. Vaše vratka byla úspěšně zaregistrována pod kódem:
+                            </p>
+
+                            <p style="margin: 0 0 20px 0; text-align: center;">
+                                <span style="display: inline-block; background-color: #e8f5f0; color: #1a7f5a; font-size: 20px; font-weight: 700; padding: 10px 25px; border-radius: 6px; letter-spacing: 1px;">{{ code }}</span>
+                            </p>
+
+                            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #333333;">Položky k vrácení:</h3>
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;">
+                                <tr style="background-color: #f8f9fa;">
+                                    <th style="padding: 10px 15px; text-align: left; font-size: 13px; color: #666666; border-bottom: 1px solid #e0e0e0;">Produkt</th>
+                                    <th style="padding: 10px 15px; text-align: right; font-size: 13px; color: #666666; border-bottom: 1px solid #e0e0e0;">Množství</th>
+                                </tr>
+                                {% for item in items %}
+                                <tr>
+                                    <td style="padding: 10px 15px; font-size: 14px; border-bottom: 1px solid #f0f0f0;">{{ item.product_name }}</td>
+                                    <td style="padding: 10px 15px; font-size: 14px; text-align: right; border-bottom: 1px solid #f0f0f0;">{{ item.quantity }} ks</td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+
+                            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #333333;">Jak postupovat:</h3>
+                            <ol style="margin: 0 0 20px 0; padding-left: 20px; font-size: 14px; line-height: 1.8; color: #555555;">
+                                <li>Zabalte zboží do původního nebo jiného vhodného obalu.</li>
+                                <li>Přiložte do balíku kód vratky <strong>{{ code }}</strong>.</li>
+                                {% if label_url %}
+                                <li>Stáhněte si <a href="{{ label_url }}" style="color: #1a7f5a; text-decoration: underline;">přepravní štítek</a> a nalepte ho na balík.</li>
+                                {% else %}
+                                <li>Štítek s adresou pro vrácení vám bude zaslán v samostatném e-mailu.</li>
+                                {% endif %}
+                                <li>Odevzdejte balík na nejbližším výdejním místě.</li>
+                            </ol>
+
+                            {% if label_url %}
+                            <p style="margin: 0 0 20px 0; text-align: center;">
+                                <a href="{{ label_url }}" style="display: inline-block; background-color: #1a7f5a; color: #ffffff; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-size: 15px; font-weight: 600;">Stáhnout přepravní štítek</a>
+                            </p>
+                            {% endif %}
+
+                            <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #555555;">
+                                O průběhu zpracování vás budeme informovat e-mailem.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 20px 30px; border-top: 1px solid #e0e0e0;">
+                            <p style="margin: 0 0 5px 0; font-size: 13px; color: #888888; text-align: center;">
+                                Máte otázky? Napište nám na <a href="mailto:info@proteinaco.cz" style="color: #1a7f5a; text-decoration: none;">info@proteinaco.cz</a>
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #aaaaaa; text-align: center;">
+                                Proteinaco s.r.o.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

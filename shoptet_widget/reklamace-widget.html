@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vrácení a reklamace | Proteinaco</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- GT Flexa is proteinaco.cz primary font, Inter as fallback -->
+    <style>
+        /* ===== Reset & Base ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'GT Flexa', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #292929;
+            background: #f7f8fa;
+            line-height: 1.6;
+        }
+
+        #reklamace-app {
+            max-width: 640px;
+            margin: 32px auto;
+            padding: 0 16px;
+        }
+
+        /* ===== Typography ===== */
+        h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 8px; color: #1a1a1a; }
+        h2 { font-size: 1.35rem; font-weight: 600; margin-bottom: 16px; color: #1a1a1a; }
+        h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; color: #333; }
+        p { margin-bottom: 12px; }
+
+        /* ===== Logo ===== */
+        .widget-logo {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .widget-logo img {
+            max-height: 48px;
+        }
+
+        .widget-logo-text {
+            font-size: 28px;
+            font-weight: 800;
+            color: #09A57C;
+        }
+
+        /* ===== Card ===== */
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 32px;
+            margin-bottom: 20px;
+        }
+
+        /* ===== Buttons ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #09A57C;
+            color: #fff;
+        }
+        .btn-primary:hover { background: #15694a; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(9,165,124,0.25); }
+        .btn-primary:disabled { background: #a0c4b4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .btn-secondary {
+            background: #fff;
+            color: #09A57C;
+            border: 2px solid #09A57C;
+        }
+        .btn-secondary:hover { background: #f0f9f5; transform: translateY(-1px); }
+
+        .btn-outline {
+            background: transparent;
+            color: #555;
+            border: 2px solid #ddd;
+        }
+        .btn-outline:hover { border-color: #aaa; color: #333; }
+
+        .btn-choice {
+            background: #fff;
+            color: #333;
+            border: 2px solid #e0e0e0;
+            padding: 24px 28px;
+            font-size: 1.15rem;
+            margin-bottom: 12px;
+            text-align: left;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+        .btn-choice:hover { border-color: #09A57C; background: #f0f9f5; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(9,165,124,0.12); }
+
+        .btn-choice .btn-icon {
+            font-size: 1.5rem;
+            margin-right: 6px;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.875rem;
+            width: auto;
+        }
+
+        .btn-link {
+            background: none;
+            border: none;
+            color: #09A57C;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 0;
+            font-size: 0.95rem;
+            text-decoration: underline;
+        }
+        .btn-link:hover { color: #15694a; }
+
+        /* ===== Forms ===== */
+        .form-group { margin-bottom: 20px; }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+            color: #444;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
+        .form-group input[type="tel"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #fff;
+            color: #333;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #09A57C;
+            box-shadow: 0 0 0 3px rgba(9,165,124,0.12);
+        }
+
+        .form-group textarea { resize: vertical; min-height: 100px; }
+
+        .form-group .hint {
+            font-size: 0.82rem;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 500px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        /* ===== Divider ===== */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 24px 0;
+            color: #999;
+            font-size: 0.9rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        /* ===== Checkbox / Radio items ===== */
+        .item-card {
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .item-card.selected { border-color: #09A57C; background: #f0f9f5; }
+
+        .item-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .item-header input[type="checkbox"],
+        .item-header input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #09A57C;
+            flex-shrink: 0;
+        }
+
+        .item-info { flex: 1; }
+        .item-name { font-weight: 600; font-size: 1rem; }
+        .item-meta { font-size: 0.85rem; color: #777; margin-top: 2px; }
+
+        .item-fields {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid #eee;
+        }
+
+        .item-fields .form-group { margin-bottom: 14px; }
+        .item-fields .form-group:last-child { margin-bottom: 0; }
+
+        /* ===== Radio group (resolution) ===== */
+        .radio-group { display: flex; flex-direction: column; gap: 10px; }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .radio-option:hover { border-color: #ccc; }
+        .radio-option.selected { border-color: #09A57C; background: #f0f9f5; }
+
+        .radio-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #09A57C;
+            flex-shrink: 0;
+        }
+
+        .radio-option span { font-size: 0.95rem; font-weight: 500; }
+
+        /* ===== Photo Upload ===== */
+        .upload-zone {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 32px 20px;
+            text-align: center;
+            color: #888;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #09A57C;
+            background: #f0f9f5;
+            color: #09A57C;
+        }
+
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+        .upload-text { font-size: 0.95rem; margin-bottom: 4px; }
+        .upload-hint { font-size: 0.82rem; color: #aaa; }
+
+        .photo-previews {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .photo-thumb {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+        }
+
+        .photo-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-thumb .remove-photo {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .photo-thumb .remove-photo:hover { background: rgba(200,0,0,0.8); }
+
+        /* ===== Loading ===== */
+        .spinner-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e0e0e0;
+            border-top-color: #09A57C;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== Error / Success ===== */
+        .alert {
+            padding: 14px 18px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .alert-info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+        }
+
+        /* ===== Timeline ===== */
+        .timeline { list-style: none; padding: 0; margin: 16px 0; }
+
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            padding-bottom: 20px;
+            position: relative;
+        }
+
+        .timeline-item:last-child { padding-bottom: 0; }
+
+        .timeline-dot-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 20px;
+            flex-shrink: 0;
+        }
+
+        .timeline-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #d0d0d0;
+            border: 3px solid #e8e8e8;
+            flex-shrink: 0;
+            z-index: 1;
+        }
+
+        .timeline-dot.active {
+            background: #09A57C;
+            border-color: #b8e6d0;
+        }
+
+        .timeline-dot.current {
+            background: #09A57C;
+            border-color: #b8e6d0;
+            box-shadow: 0 0 0 4px rgba(9,165,124,0.2);
+        }
+
+        .timeline-line {
+            flex: 1;
+            width: 2px;
+            background: #e0e0e0;
+            margin-top: 4px;
+        }
+
+        .timeline-line.active { background: #09A57C; }
+
+        .timeline-item:last-child .timeline-line { display: none; }
+
+        .timeline-content { flex: 1; padding-top: 0; }
+        .timeline-date { font-size: 0.82rem; color: #999; }
+        .timeline-text { font-weight: 500; font-size: 0.95rem; margin-top: 2px; }
+        .timeline-note { font-size: 0.85rem; color: #666; margin-top: 2px; }
+
+        /* ===== Status Badge ===== */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-new { background: #dbeafe; color: #1e40af; }
+        .status-waiting { background: #fef3c7; color: #92400e; }
+        .status-inspecting { background: #e0e7ff; color: #3730a3; }
+        .status-approved { background: #d1fae5; color: #065f46; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .status-refund { background: #d1fae5; color: #065f46; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-resolved { background: #d1fae5; color: #065f46; }
+        .status-info { background: #fef3c7; color: #92400e; }
+        .status-assessing { background: #e0e7ff; color: #3730a3; }
+
+        /* ===== Confirmation ===== */
+        .confirmation-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .steps-list {
+            list-style: none;
+            padding: 0;
+            counter-reset: steps;
+        }
+
+        .steps-list li {
+            counter-increment: steps;
+            padding: 12px 0;
+            padding-left: 40px;
+            position: relative;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .steps-list li:last-child { border-bottom: none; }
+
+        .steps-list li::before {
+            content: counter(steps);
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 28px;
+            height: 28px;
+            background: #09A57C;
+            color: #fff;
+            border-radius: 50%;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== Back nav ===== */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #09A57C;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        .back-link:hover { color: #15694a; }
+
+        /* ===== Section divider ===== */
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #999;
+            margin-bottom: 14px;
+            margin-top: 28px;
+        }
+
+        /* ===== Order info bar ===== */
+        .order-bar {
+            background: #f0f9f5;
+            border: 1px solid #b8e6d0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .order-bar strong { color: #09A57C; }
+
+        /* ===== Footer ===== */
+        .widget-footer {
+            text-align: center;
+            padding: 24px 0 16px;
+            font-size: 0.82rem;
+            color: #aaa;
+            letter-spacing: 0.2px;
+        }
+
+        .widget-footer span {
+            color: #09A57C;
+            font-weight: 600;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 500px) {
+            #reklamace-app { margin: 16px auto; }
+            .card { padding: 20px; }
+            h1 { font-size: 1.5rem; }
+            .btn-choice { padding: 20px 20px; font-size: 1.05rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="reklamace-app">
+        <!-- App renders here -->
+    </div>
+    <script>
+    (function() {
+        'use strict';
+
+        /* ===== Configuration ===== */
+        const CONFIG = {
+            API_BASE: 'https://reklamace-api.proteinaco.cz/api/v1/customer',
+            // Override for local dev:
+            // API_BASE: 'http://localhost:8040/api/v1/customer',
+            MAX_PHOTOS: 5,
+            MAX_PHOTO_SIZE_MB: 5,
+        };
+
+        /* ===== Label maps ===== */
+        const STATUS_LABELS = {
+            'new': 'Přijatá',
+            'waiting_for_delivery': 'Zásilka na cestě k nám',
+            'received_inspecting': 'Přijato na skladu \u2014 kontroluje se',
+            'approved': 'Schváleno',
+            'rejected': 'Zamítnuto',
+            'refund_ready': 'Peníze připraveny k odeslání',
+            'completed': 'Dokončeno',
+            'waiting_for_assessment': 'Čeká na posouzení',
+            'need_more_info': 'Čeká na doplnění informací',
+            'assessing': 'Posuzuje se',
+            'resolved': 'Vyřešená',
+        };
+
+        const STATUS_CSS = {
+            'new': 'status-new',
+            'waiting_for_delivery': 'status-waiting',
+            'received_inspecting': 'status-inspecting',
+            'approved': 'status-approved',
+            'rejected': 'status-rejected',
+            'refund_ready': 'status-refund',
+            'completed': 'status-completed',
+            'waiting_for_assessment': 'status-waiting',
+            'need_more_info': 'status-info',
+            'assessing': 'status-assessing',
+            'resolved': 'status-resolved',
+        };
+
+        const RETURN_REASONS = [
+            { value: 'ordered_wrong', label: 'Objednal/a jsem špatně' },
+            { value: 'not_satisfied', label: 'Produkt mi nevyhovuje' },
+            { value: 'other', label: 'Jiný důvod' },
+        ];
+
+        const RESOLUTION_OPTIONS = [
+            { value: 'discount', label: 'Sleva na další nákup' },
+            { value: 'new_product', label: 'Nový produkt' },
+            { value: 'refund', label: 'Vrácení peněz' },
+            { value: 'other', label: 'Jiné řešení' },
+        ];
+
+        /* ===== State ===== */
+        const state = {
+            currentStep: 'landing',
+            flowType: null,
+            orderData: null,
+            resultData: null,
+            trackingData: null,
+            trackingType: null,
+            loading: false,
+            error: null,
+            // Return form state
+            selectedItems: {},
+            // Complaint form state
+            selectedProduct: null,
+            complaintPhotos: [],
+            preferredResolution: 'refund',
+            // Contact fields
+            contactName: '',
+            contactPhone: '',
+            contactBankAccount: '',
+            // Lookup fields
+            lookupOrderCode: '',
+            lookupEmail: '',
+            // Tracking fields
+            trackCode: '',
+            trackEmail: '',
+        };
+
+        /* ===== API helpers ===== */
+        async function apiCall(method, path, body, isFormData) {
+            state.loading = true;
+            state.error = null;
+            render();
+
+            const url = CONFIG.API_BASE + path;
+            const options = { method };
+
+            if (isFormData) {
+                options.body = body;
+            } else if (body) {
+                options.headers = { 'Content-Type': 'application/json' };
+                options.body = JSON.stringify(body);
+            }
+
+            try {
+                const resp = await fetch(url, options);
+                const data = await resp.json();
+                if (!resp.ok) {
+                    throw new Error(data.detail || 'Nastala chyba. Zkuste to prosím znovu.');
+                }
+                return data;
+            } catch (err) {
+                if (err instanceof TypeError) {
+                    throw new Error('Nepodařilo se spojit se serverem. Zkontrolujte připojení k internetu.');
+                }
+                throw err;
+            } finally {
+                state.loading = false;
+            }
+        }
+
+        /* ===== Helpers ===== */
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('cs-CZ', {
+                day: 'numeric', month: 'numeric', year: 'numeric',
+                hour: '2-digit', minute: '2-digit',
+            });
+        }
+
+        function getStatusLabel(status) {
+            return STATUS_LABELS[status] || status;
+        }
+
+        function getStatusCss(status) {
+            return STATUS_CSS[status] || 'status-new';
+        }
+
+        /* ===== Validation ===== */
+        function validateEmail(email) {
+            return email && email.includes('@') && email.includes('.');
+        }
+
+        function validateRequired(value) {
+            return value && value.trim().length > 0;
+        }
+
+        /* ===== Logo HTML ===== */
+        function renderLogo() {
+            return `
+                <div class="widget-logo">
+                    <img src="https://cdn.myshoptet.com/usr/www.proteinaco.cz/user/logos/logo-proteinco.svg"
+                         alt="Protein a Co"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="widget-logo-text" style="display:none; font-weight:800; font-size:24px; color:#292929;">:Protein a Co</div>
+                </div>
+            `;
+        }
+
+        /* ===== Footer HTML ===== */
+        function renderFooter() {
+            return `
+                <div class="widget-footer">
+                    <span>Proteinaco.cz</span> &mdash; Vaše zdraví, náš závazek
+                </div>
+            `;
+        }
+
+        /* ===== Render engine ===== */
+        function render() {
+            const app = document.getElementById('reklamace-app');
+            let html = '';
+
+            if (state.loading) {
+                html += '<div class="spinner-overlay"><div class="spinner"></div></div>';
+            }
+
+            html += renderLogo();
+
+            switch (state.currentStep) {
+                case 'landing':
+                    html += renderLanding();
+                    break;
+                case 'lookup':
+                    html += renderLookup();
+                    break;
+                case 'return-form':
+                    html += renderReturnForm();
+                    break;
+                case 'complaint-form':
+                    html += renderComplaintForm();
+                    break;
+                case 'confirmation':
+                    html += renderConfirmation();
+                    break;
+                case 'tracking':
+                    html += renderTracking();
+                    break;
+            }
+
+            html += renderFooter();
+
+            app.innerHTML = html;
+            attachEventListeners();
+        }
+
+        /* ===== Step renderers ===== */
+
+        function renderLanding() {
+            return `
+                <div class="card">
+                    <h1>Vrácení a reklamace</h1>
+                    <p style="color:#666; margin-bottom:28px;">
+                        Chcete vrátit zboží nebo reklamovat produkt? Vyberte si možnost níže.
+                    </p>
+
+                    <button class="btn btn-choice" data-action="start-return">
+                        <span class="btn-icon">&#x1F504;</span>
+                        Chci vrátit zboží
+                    </button>
+
+                    <button class="btn btn-choice" data-action="start-complaint">
+                        <span class="btn-icon">&#x26A0;&#xFE0F;</span>
+                        Chci reklamovat
+                    </button>
+
+                    <div class="divider">nebo</div>
+
+                    <h3>Sledovat stav žádosti</h3>
+
+                    ${state.error ? `<div class="alert alert-error">${escapeHtml(state.error)}</div>` : ''}
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="track-code">Číslo případu</label>
+                            <input type="text" id="track-code" placeholder="RV-2026-0001"
+                                   value="${escapeHtml(state.trackCode)}">
+                        </div>
+                        <div class="form-group">
+                            <label for="track-email">E-mail</label>
+                            <input type="email" id="track-email" placeholder="vas@email.cz"
+                                   value="${escapeHtml(state.trackEmail)}">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-secondary" data-action="track">
+                        Sledovat
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderLookup() {
+            return `
+                <button class="back-link" data-action="go-landing">&#x2190; Zpět</button>
+
+                <div class="card">
+                    <h2>Vyhledat objednávku</h2>
+                    <p style="color:#666;">
+                        ${state.flowType === 'return'
+                            ? 'Pro vrácení zboží nejprve vyhledejte svou objednávku.'
+                            : 'Pro podání reklamace nejprve vyhledejte svou objednávku.'}
+                    </p>
+
+                    ${state.error ? `<div class="alert alert-error">${escapeHtml(state.error)}</div>` : ''}
+
+                    <div class="form-group">
+                        <label for="lookup-order">Číslo objednávky</label>
+                        <input type="text" id="lookup-order" placeholder="např. OBJ-12345"
+                               value="${escapeHtml(state.lookupOrderCode)}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lookup-email">E-mail</label>
+                        <input type="email" id="lookup-email" placeholder="vas@email.cz"
+                               value="${escapeHtml(state.lookupEmail)}">
+                        <span class="hint">Zadejte e-mail, který jste použili při objednávce.</span>
+                    </div>
+
+                    <button class="btn btn-primary" data-action="lookup-order">
+                        Vyhledat objednávku
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderReturnForm() {
+            const order = state.orderData;
+            if (!order) return '';
+
+            const itemsHtml = order.items.map((item, idx) => {
+                const sel = state.selectedItems[idx];
+                const isSelected = !!sel;
+
+                const maxQty = item.quantity;
+                const qtyOptions = Array.from({length: maxQty}, (_, i) => i + 1)
+                    .map(n => `<option value="${n}" ${sel && sel.quantity === n ? 'selected' : ''}>${n}</option>`)
+                    .join('');
+
+                const reasonOptions = RETURN_REASONS
+                    .map(r => `<option value="${r.value}" ${sel && sel.reason === r.value ? 'selected' : ''}>${escapeHtml(r.label)}</option>`)
+                    .join('');
+
+                return `
+                    <div class="item-card ${isSelected ? 'selected' : ''}">
+                        <div class="item-header">
+                            <input type="checkbox" id="item-${idx}" data-action="toggle-item" data-idx="${idx}"
+                                   ${isSelected ? 'checked' : ''}>
+                            <label for="item-${idx}" class="item-info" style="cursor:pointer;">
+                                <div class="item-name">${escapeHtml(item.product_name)}</div>
+                                <div class="item-meta">${escapeHtml(item.product_code)} &middot; ${item.quantity} ks &middot; ${item.unit_price.toFixed(2)} Kč/ks</div>
+                            </label>
+                        </div>
+                        ${isSelected ? `
+                        <div class="item-fields">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Množství</label>
+                                    <select data-action="item-qty" data-idx="${idx}">${qtyOptions}</select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Důvod</label>
+                                    <select data-action="item-reason" data-idx="${idx}">${reasonOptions}</select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Komentář (nepovinný)</label>
+                                <input type="text" data-action="item-comment" data-idx="${idx}"
+                                       placeholder="Upřesněte důvod..."
+                                       value="${escapeHtml(sel.comment || '')}">
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            const hasSelected = Object.keys(state.selectedItems).length > 0;
+
+            return `
+                <button class="back-link" data-action="go-lookup">&#x2190; Zpět na vyhledávání</button>
+
+                <div class="card">
+                    <div class="order-bar">
+                        <span>Objednávka: <strong>${escapeHtml(order.order_code)}</strong></span>
+                        ${order.order_date ? `<span>${formatDate(order.order_date)}</span>` : ''}
+                    </div>
+
+                    ${state.error ? `<div class="alert alert-error">${escapeHtml(state.error)}</div>` : ''}
+
+                    <h2>Vyberte položky k vrácení</h2>
+                    ${itemsHtml}
+
+                    <div class="section-title">Kontaktní údaje</div>
+
+                    <div class="form-group">
+                        <label for="contact-name">Jméno a příjmení *</label>
+                        <input type="text" id="contact-name" placeholder="Jan Novák"
+                               value="${escapeHtml(state.contactName || order.customer_name || '')}">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contact-phone">Telefon</label>
+                            <input type="tel" id="contact-phone" placeholder="+420 123 456 789"
+                                   value="${escapeHtml(state.contactPhone)}">
+                        </div>
+                        <div class="form-group">
+                            <label for="contact-bank">Číslo účtu</label>
+                            <input type="text" id="contact-bank" placeholder="123456789/0100"
+                                   value="${escapeHtml(state.contactBankAccount)}">
+                            <span class="hint">Pro vrácení peněz</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" data-action="submit-return" ${!hasSelected ? 'disabled' : ''}>
+                        Odeslat žádost o vrácení
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderComplaintForm() {
+            const order = state.orderData;
+            if (!order) return '';
+
+            const itemsHtml = order.items.map((item, idx) => {
+                const isSelected = state.selectedProduct === idx;
+                return `
+                    <div class="item-card ${isSelected ? 'selected' : ''}">
+                        <div class="item-header">
+                            <input type="radio" name="complaint-product" id="prod-${idx}"
+                                   data-action="select-product" data-idx="${idx}"
+                                   ${isSelected ? 'checked' : ''}>
+                            <label for="prod-${idx}" class="item-info" style="cursor:pointer;">
+                                <div class="item-name">${escapeHtml(item.product_name)}</div>
+                                <div class="item-meta">${escapeHtml(item.product_code)} &middot; ${item.quantity} ks</div>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const resolutionHtml = RESOLUTION_OPTIONS.map(opt => {
+                const isSelected = state.preferredResolution === opt.value;
+                return `
+                    <label class="radio-option ${isSelected ? 'selected' : ''}">
+                        <input type="radio" name="resolution" value="${opt.value}"
+                               data-action="select-resolution"
+                               ${isSelected ? 'checked' : ''}>
+                        <span>${escapeHtml(opt.label)}</span>
+                    </label>
+                `;
+            }).join('');
+
+            const photosHtml = state.complaintPhotos.map((photo, idx) => `
+                <div class="photo-thumb">
+                    <img src="${photo.preview}" alt="Foto ${idx + 1}">
+                    <button class="remove-photo" data-action="remove-photo" data-idx="${idx}">&times;</button>
+                </div>
+            `).join('');
+
+            const canUpload = state.complaintPhotos.length < CONFIG.MAX_PHOTOS;
+
+            return `
+                <button class="back-link" data-action="go-lookup">&#x2190; Zpět na vyhledávání</button>
+
+                <div class="card">
+                    <div class="order-bar">
+                        <span>Objednávka: <strong>${escapeHtml(order.order_code)}</strong></span>
+                        ${order.order_date ? `<span>${formatDate(order.order_date)}</span>` : ''}
+                    </div>
+
+                    ${state.error ? `<div class="alert alert-error">${escapeHtml(state.error)}</div>` : ''}
+
+                    <h2>Vyberte reklamovaný produkt</h2>
+                    ${itemsHtml}
+
+                    ${state.selectedProduct !== null ? `
+                    <div class="section-title">Popis problému</div>
+
+                    <div class="form-group">
+                        <label for="problem-desc">Popište problém *</label>
+                        <textarea id="problem-desc" placeholder="Popište co se stalo, jaký je problém s produktem..."
+                                  rows="4"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="discovery-date">Kdy jste problém zjistil/a</label>
+                            <input type="date" id="discovery-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="doses-taken">Kolik dávek jste odebral/a</label>
+                            <input type="number" id="doses-taken" min="0" placeholder="např. 5">
+                        </div>
+                    </div>
+
+                    <div class="section-title">Fotografie</div>
+
+                    <div class="form-group">
+                        ${canUpload ? `
+                        <div class="upload-zone" id="upload-zone">
+                            <input type="file" id="file-input" accept="image/*" multiple>
+                            <span class="upload-icon">&#x1F4F7;</span>
+                            <div class="upload-text">Přetáhněte soubory sem nebo klikněte</div>
+                            <div class="upload-hint">Max ${CONFIG.MAX_PHOTOS} fotek, max ${CONFIG.MAX_PHOTO_SIZE_MB} MB/ks</div>
+                        </div>
+                        ` : `
+                        <div class="alert alert-info">Dosáhli jste maximálního počtu fotek (${CONFIG.MAX_PHOTOS}).</div>
+                        `}
+
+                        ${state.complaintPhotos.length > 0 ? `
+                        <div class="photo-previews">${photosHtml}</div>
+                        ` : ''}
+                    </div>
+
+                    <div class="section-title">Preferované řešení</div>
+                    <div class="form-group">
+                        <div class="radio-group">${resolutionHtml}</div>
+                    </div>
+                    ` : ''}
+
+                    <div class="section-title">Kontaktní údaje</div>
+
+                    <div class="form-group">
+                        <label for="contact-name">Jméno a příjmení *</label>
+                        <input type="text" id="contact-name" placeholder="Jan Novák"
+                               value="${escapeHtml(state.contactName || order.customer_name || '')}">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contact-phone">Telefon</label>
+                            <input type="tel" id="contact-phone" placeholder="+420 123 456 789"
+                                   value="${escapeHtml(state.contactPhone)}">
+                        </div>
+                        <div class="form-group">
+                            <label for="contact-bank">Číslo účtu</label>
+                            <input type="text" id="contact-bank" placeholder="123456789/0100"
+                                   value="${escapeHtml(state.contactBankAccount)}">
+                            <span class="hint">Pro vrácení peněz</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" data-action="submit-complaint"
+                            ${state.selectedProduct === null ? 'disabled' : ''}>
+                        Odeslat reklamaci
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderConfirmation() {
+            const result = state.resultData;
+            if (!result) return '';
+
+            const isReturn = state.flowType === 'return';
+            const typeLabel = isReturn ? 'vrácení' : 'reklamace';
+
+            return `
+                <div class="card" style="text-align:center;">
+                    <div class="confirmation-icon">&#x2705;</div>
+                    <h2>Žádost byla přijata!</h2>
+                    <p style="font-size:1.1rem; color:#666;">
+                        Číslo: <strong style="color:#09A57C;">${escapeHtml(result.code)}</strong>
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h3>Co bude dál:</h3>
+
+                    ${result.instructions ? `
+                    <div class="alert alert-info" style="margin-bottom:20px;">
+                        ${escapeHtml(result.instructions)}
+                    </div>
+                    ` : ''}
+
+                    <ol class="steps-list">
+                        ${result.label_url ? `
+                        <li>
+                            Stáhněte přepravní štítek<br>
+                            <a href="${escapeHtml(result.label_url)}" class="btn btn-secondary btn-sm"
+                               target="_blank" style="margin-top:8px; display:inline-flex;">
+                                &#x1F4E5; Stáhnout štítek
+                            </a>
+                        </li>
+                        ` : `
+                        <li>Obdržíte e-mail s dalšími instrukcemi</li>
+                        `}
+                        <li>Zabalte zboží do původního nebo vhodného obalu</li>
+                        <li>Podejte zásilku na Zásilkovně nebo České poště</li>
+                    </ol>
+
+                    <p style="margin-top:20px; color:#666; font-size:0.95rem;">
+                        E-mail s potvrzením byl odeslán na
+                        <strong>${escapeHtml(state.lookupEmail)}</strong>
+                    </p>
+
+                    <div style="margin-top:24px; display:flex; gap:12px; flex-wrap:wrap;">
+                        <button class="btn btn-primary" data-action="go-tracking-from-confirm" style="flex:1;">
+                            Sledovat stav
+                        </button>
+                        <button class="btn btn-outline" data-action="go-landing" style="flex:1;">
+                            Zpět na hlavní stránku
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTracking() {
+            const data = state.trackingData;
+            if (!data) return '';
+
+            const isReturn = state.trackingType === 'return';
+            const typeLabel = isReturn ? 'Vrácení' : 'Reklamace';
+
+            /* Build timeline from status_history */
+            const history = data.status_history || [];
+            const timelineHtml = history.map((entry, idx) => {
+                const isLast = idx === history.length - 1;
+                return `
+                    <li class="timeline-item">
+                        <div class="timeline-dot-col">
+                            <div class="timeline-dot ${isLast ? 'current' : 'active'}"></div>
+                            <div class="timeline-line active"></div>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">${formatDateTime(entry.created_at)}</div>
+                            <div class="timeline-text">${escapeHtml(getStatusLabel(entry.new_status))}</div>
+                            ${entry.note ? `<div class="timeline-note">${escapeHtml(entry.note)}</div>` : ''}
+                        </div>
+                    </li>
+                `;
+            }).join('');
+
+            /* Items */
+            const itemsHtml = (data.items || []).map(item => `
+                <div style="padding:10px 0; border-bottom:1px solid #f0f0f0;">
+                    <strong>${escapeHtml(item.product_name)}</strong>
+                    <span style="color:#888;"> &middot; ${item.quantity} ks</span>
+                    ${item.problem_description ? `<div style="font-size:0.9rem; color:#666; margin-top:4px;">${escapeHtml(item.problem_description)}</div>` : ''}
+                    ${item.reason ? `<div style="font-size:0.9rem; color:#666; margin-top:4px;">Důvod: ${escapeHtml(RETURN_REASONS.find(r => r.value === item.reason)?.label || item.reason)}</div>` : ''}
+                </div>
+            `).join('');
+
+            /* Need more info? Show supplement form */
+            const needInfo = data.status === 'need_more_info';
+
+            return `
+                <button class="back-link" data-action="go-landing">&#x2190; Zpět</button>
+
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:20px;">
+                        <div>
+                            <h2 style="margin-bottom:4px;">${typeLabel}: ${escapeHtml(data.code)}</h2>
+                            <div style="color:#666; font-size:0.9rem;">Vytvořeno: ${formatDate(data.created_at)}</div>
+                        </div>
+                        <span class="status-badge ${getStatusCss(data.status)}">
+                            ${escapeHtml(data.status_label || getStatusLabel(data.status))}
+                        </span>
+                    </div>
+
+                    ${state.error ? `<div class="alert alert-error">${escapeHtml(state.error)}</div>` : ''}
+
+                    ${needInfo ? `
+                    <div class="alert alert-info" style="margin-bottom:20px;">
+                        Čekáme na vaše doplnění informací. Odpovězte prosím níže.
+                    </div>
+
+                    <div class="form-group">
+                        <label for="supplement-msg">Vaše zpráva</label>
+                        <textarea id="supplement-msg" rows="3" placeholder="Napište doplňující informace..."></textarea>
+                    </div>
+
+                    <button class="btn btn-primary btn-sm" data-action="submit-supplement" style="margin-bottom:24px;">
+                        Odeslat doplnění
+                    </button>
+                    ` : ''}
+
+                    <h3>Položky</h3>
+                    ${itemsHtml}
+
+                    <h3 style="margin-top:24px;">Průběh</h3>
+                    <ul class="timeline">
+                        ${timelineHtml || '<li style="color:#888; padding:12px 0;">Žádná historie zatím.</li>'}
+                    </ul>
+                </div>
+            `;
+        }
+
+        /* ===== Event attachment ===== */
+        function attachEventListeners() {
+            /* Delegate all clicks */
+            document.querySelectorAll('[data-action]').forEach(el => {
+                const action = el.getAttribute('data-action');
+
+                switch (action) {
+                    case 'start-return':
+                        el.addEventListener('click', () => {
+                            state.flowType = 'return';
+                            state.currentStep = 'lookup';
+                            state.error = null;
+                            render();
+                        });
+                        break;
+
+                    case 'start-complaint':
+                        el.addEventListener('click', () => {
+                            state.flowType = 'complaint';
+                            state.currentStep = 'lookup';
+                            state.error = null;
+                            render();
+                        });
+                        break;
+
+                    case 'go-landing':
+                        el.addEventListener('click', () => {
+                            state.currentStep = 'landing';
+                            state.error = null;
+                            render();
+                        });
+                        break;
+
+                    case 'go-lookup':
+                        el.addEventListener('click', () => {
+                            state.currentStep = 'lookup';
+                            state.error = null;
+                            render();
+                        });
+                        break;
+
+                    case 'lookup-order':
+                        el.addEventListener('click', handleLookupOrder);
+                        break;
+
+                    case 'track':
+                        el.addEventListener('click', handleTrack);
+                        break;
+
+                    case 'toggle-item':
+                        el.addEventListener('change', (e) => handleToggleItem(e, el));
+                        break;
+
+                    case 'item-qty':
+                        el.addEventListener('change', (e) => {
+                            const idx = el.getAttribute('data-idx');
+                            if (state.selectedItems[idx]) {
+                                state.selectedItems[idx].quantity = parseInt(e.target.value);
+                            }
+                        });
+                        break;
+
+                    case 'item-reason':
+                        el.addEventListener('change', (e) => {
+                            const idx = el.getAttribute('data-idx');
+                            if (state.selectedItems[idx]) {
+                                state.selectedItems[idx].reason = e.target.value;
+                            }
+                        });
+                        break;
+
+                    case 'item-comment':
+                        el.addEventListener('input', (e) => {
+                            const idx = el.getAttribute('data-idx');
+                            if (state.selectedItems[idx]) {
+                                state.selectedItems[idx].comment = e.target.value;
+                            }
+                        });
+                        break;
+
+                    case 'select-product':
+                        el.addEventListener('change', () => {
+                            state.selectedProduct = parseInt(el.getAttribute('data-idx'));
+                            render();
+                        });
+                        break;
+
+                    case 'select-resolution':
+                        el.addEventListener('change', () => {
+                            state.preferredResolution = el.value;
+                            render();
+                        });
+                        break;
+
+                    case 'remove-photo':
+                        el.addEventListener('click', () => {
+                            const idx = parseInt(el.getAttribute('data-idx'));
+                            state.complaintPhotos.splice(idx, 1);
+                            render();
+                        });
+                        break;
+
+                    case 'submit-return':
+                        el.addEventListener('click', handleSubmitReturn);
+                        break;
+
+                    case 'submit-complaint':
+                        el.addEventListener('click', handleSubmitComplaint);
+                        break;
+
+                    case 'submit-supplement':
+                        el.addEventListener('click', handleSubmitSupplement);
+                        break;
+
+                    case 'go-tracking-from-confirm':
+                        el.addEventListener('click', () => {
+                            const code = state.resultData?.code;
+                            const email = state.lookupEmail;
+                            if (code && email) {
+                                state.trackCode = code;
+                                state.trackEmail = email;
+                                handleTrack();
+                            }
+                        });
+                        break;
+                }
+            });
+
+            /* File input and drag & drop */
+            const fileInput = document.getElementById('file-input');
+            const uploadZone = document.getElementById('upload-zone');
+
+            if (fileInput) {
+                fileInput.addEventListener('change', handleFileSelect);
+            }
+
+            if (uploadZone) {
+                uploadZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.add('dragover');
+                });
+                uploadZone.addEventListener('dragleave', () => {
+                    uploadZone.classList.remove('dragover');
+                });
+                uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.remove('dragover');
+                    handleFileDrop(e.dataTransfer.files);
+                });
+            }
+
+            /* Sync input values on input events */
+            const trackCodeEl = document.getElementById('track-code');
+            const trackEmailEl = document.getElementById('track-email');
+            const lookupOrderEl = document.getElementById('lookup-order');
+            const lookupEmailEl = document.getElementById('lookup-email');
+            const contactNameEl = document.getElementById('contact-name');
+            const contactPhoneEl = document.getElementById('contact-phone');
+            const contactBankEl = document.getElementById('contact-bank');
+
+            if (trackCodeEl) trackCodeEl.addEventListener('input', (e) => { state.trackCode = e.target.value; });
+            if (trackEmailEl) trackEmailEl.addEventListener('input', (e) => { state.trackEmail = e.target.value; });
+            if (lookupOrderEl) lookupOrderEl.addEventListener('input', (e) => { state.lookupOrderCode = e.target.value; });
+            if (lookupEmailEl) lookupEmailEl.addEventListener('input', (e) => { state.lookupEmail = e.target.value; });
+            if (contactNameEl) contactNameEl.addEventListener('input', (e) => { state.contactName = e.target.value; });
+            if (contactPhoneEl) contactPhoneEl.addEventListener('input', (e) => { state.contactPhone = e.target.value; });
+            if (contactBankEl) contactBankEl.addEventListener('input', (e) => { state.contactBankAccount = e.target.value; });
+        }
+
+        /* ===== Action handlers ===== */
+
+        async function handleLookupOrder() {
+            /* Read current input values */
+            const orderCode = state.lookupOrderCode.trim();
+            const email = state.lookupEmail.trim();
+
+            if (!orderCode) {
+                state.error = 'Zadejte číslo objednávky.';
+                render();
+                return;
+            }
+            if (!validateEmail(email)) {
+                state.error = 'Zadejte platný e-mail.';
+                render();
+                return;
+            }
+
+            try {
+                const data = await apiCall('POST', '/lookup-order', {
+                    order_code: orderCode,
+                    email: email,
+                });
+
+                state.orderData = data;
+                state.selectedItems = {};
+                state.selectedProduct = null;
+                state.complaintPhotos = [];
+                state.contactName = data.customer_name || '';
+                state.error = null;
+
+                if (state.flowType === 'return') {
+                    state.currentStep = 'return-form';
+                } else {
+                    state.currentStep = 'complaint-form';
+                }
+            } catch (err) {
+                state.error = err.message;
+            }
+
+            render();
+        }
+
+        async function handleTrack() {
+            const code = state.trackCode.trim();
+            const email = state.trackEmail.trim();
+
+            if (!code) {
+                state.error = 'Zadejte číslo případu.';
+                render();
+                return;
+            }
+            if (!validateEmail(email)) {
+                state.error = 'Zadejte platný e-mail.';
+                render();
+                return;
+            }
+
+            /* Determine type from prefix: RV = return, RK = complaint */
+            const isReturn = code.toUpperCase().startsWith('RV');
+            const isComplaint = code.toUpperCase().startsWith('RK');
+
+            if (!isReturn && !isComplaint) {
+                /* Try both endpoints */
+                try {
+                    const data = await apiCall('GET', `/returns/${encodeURIComponent(code)}?email=${encodeURIComponent(email)}`);
+                    state.trackingData = data;
+                    state.trackingType = 'return';
+                    state.currentStep = 'tracking';
+                    state.error = null;
+                    render();
+                    return;
+                } catch (e) {
+                    /* Fall through to try complaints */
+                }
+
+                try {
+                    const data = await apiCall('GET', `/complaints/${encodeURIComponent(code)}?email=${encodeURIComponent(email)}`);
+                    state.trackingData = data;
+                    state.trackingType = 'complaint';
+                    state.currentStep = 'tracking';
+                    state.error = null;
+                    render();
+                    return;
+                } catch (e) {
+                    state.error = 'Případ nebyl nalezen. Zkontrolujte číslo a e-mail.';
+                    render();
+                    return;
+                }
+            }
+
+            const endpoint = isReturn
+                ? `/returns/${encodeURIComponent(code)}?email=${encodeURIComponent(email)}`
+                : `/complaints/${encodeURIComponent(code)}?email=${encodeURIComponent(email)}`;
+
+            try {
+                const data = await apiCall('GET', endpoint);
+                state.trackingData = data;
+                state.trackingType = isReturn ? 'return' : 'complaint';
+                state.currentStep = 'tracking';
+                state.error = null;
+            } catch (err) {
+                state.error = err.message;
+            }
+
+            render();
+        }
+
+        function handleToggleItem(e, el) {
+            const idx = el.getAttribute('data-idx');
+            if (e.target.checked) {
+                const item = state.orderData.items[idx];
+                state.selectedItems[idx] = {
+                    product_code: item.product_code,
+                    quantity: item.quantity,
+                    reason: 'not_satisfied',
+                    comment: '',
+                };
+            } else {
+                delete state.selectedItems[idx];
+            }
+            render();
+        }
+
+        async function handleSubmitReturn() {
+            /* Gather contact from current DOM values */
+            syncContactFields();
+
+            const name = state.contactName.trim();
+
+            if (!name) {
+                state.error = 'Vyplňte jméno a příjmení.';
+                render();
+                return;
+            }
+
+            const items = Object.values(state.selectedItems).map(sel => ({
+                product_code: sel.product_code,
+                quantity: sel.quantity,
+                reason: sel.reason,
+                comment: sel.comment || null,
+            }));
+
+            if (items.length === 0) {
+                state.error = 'Vyberte alespoň jednu položku k vrácení.';
+                render();
+                return;
+            }
+
+            try {
+                const data = await apiCall('POST', '/returns', {
+                    order_code: state.orderData.order_code,
+                    email: state.lookupEmail,
+                    name: name,
+                    phone: state.contactPhone || null,
+                    bank_account: state.contactBankAccount || null,
+                    items: items,
+                });
+
+                state.resultData = data;
+                state.currentStep = 'confirmation';
+                state.error = null;
+            } catch (err) {
+                state.error = err.message;
+            }
+
+            render();
+        }
+
+        async function handleSubmitComplaint() {
+            syncContactFields();
+
+            const name = state.contactName.trim();
+            const problemDesc = document.getElementById('problem-desc')?.value?.trim();
+            const discoveryDate = document.getElementById('discovery-date')?.value || null;
+            const dosesTaken = document.getElementById('doses-taken')?.value;
+
+            if (!name) {
+                state.error = 'Vyplňte jméno a příjmení.';
+                render();
+                return;
+            }
+
+            if (state.selectedProduct === null) {
+                state.error = 'Vyberte reklamovaný produkt.';
+                render();
+                return;
+            }
+
+            if (!problemDesc) {
+                state.error = 'Popište problém s produktem.';
+                render();
+                return;
+            }
+
+            const product = state.orderData.items[state.selectedProduct];
+
+            const complaintItem = {
+                product_code: product.product_code,
+                quantity: 1,
+                problem_description: problemDesc,
+                preferred_resolution: state.preferredResolution,
+            };
+
+            if (discoveryDate) complaintItem.discovery_date = discoveryDate;
+            if (dosesTaken) complaintItem.doses_taken = parseInt(dosesTaken);
+
+            try {
+                const data = await apiCall('POST', '/complaints', {
+                    order_code: state.orderData.order_code,
+                    email: state.lookupEmail,
+                    name: name,
+                    phone: state.contactPhone || null,
+                    bank_account: state.contactBankAccount || null,
+                    items: [complaintItem],
+                });
+
+                state.resultData = data;
+
+                /* Upload photos if any */
+                if (state.complaintPhotos.length > 0) {
+                    await uploadPhotos(data.code);
+                }
+
+                state.currentStep = 'confirmation';
+                state.error = null;
+            } catch (err) {
+                state.error = err.message;
+            }
+
+            render();
+        }
+
+        async function uploadPhotos(complaintCode) {
+            const formData = new FormData();
+            formData.append('email', state.lookupEmail);
+
+            for (const photo of state.complaintPhotos) {
+                formData.append('files', photo.file, photo.file.name);
+            }
+
+            try {
+                await apiCall('POST', `/complaints/${encodeURIComponent(complaintCode)}/photos`, formData, true);
+            } catch (err) {
+                /* Non-blocking: complaint already created, photos failed */
+                console.error('Photo upload failed:', err);
+            }
+        }
+
+        async function handleSubmitSupplement() {
+            const msg = document.getElementById('supplement-msg')?.value?.trim();
+            if (!msg) {
+                state.error = 'Napište zprávu.';
+                render();
+                return;
+            }
+
+            const code = state.trackingData.code;
+            const email = state.trackEmail;
+
+            try {
+                await apiCall('POST', `/complaints/${encodeURIComponent(code)}/supplement`, {
+                    email: email,
+                    message: msg,
+                });
+
+                /* Refresh tracking data */
+                const data = await apiCall('GET', `/complaints/${encodeURIComponent(code)}?email=${encodeURIComponent(email)}`);
+                state.trackingData = data;
+                state.error = null;
+            } catch (err) {
+                state.error = err.message;
+            }
+
+            render();
+        }
+
+        /* ===== File handling ===== */
+
+        function handleFileSelect(e) {
+            processFiles(e.target.files);
+        }
+
+        function handleFileDrop(files) {
+            processFiles(files);
+        }
+
+        function processFiles(fileList) {
+            const remaining = CONFIG.MAX_PHOTOS - state.complaintPhotos.length;
+            const files = Array.from(fileList).slice(0, remaining);
+
+            for (const file of files) {
+                if (!file.type.startsWith('image/')) {
+                    state.error = `Soubor "${file.name}" není obrázek.`;
+                    render();
+                    return;
+                }
+
+                if (file.size > CONFIG.MAX_PHOTO_SIZE_MB * 1024 * 1024) {
+                    state.error = `Soubor "${file.name}" je příliš velký (max ${CONFIG.MAX_PHOTO_SIZE_MB} MB).`;
+                    render();
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    state.complaintPhotos.push({
+                        file: file,
+                        preview: e.target.result,
+                    });
+                    render();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        /* ===== Sync helpers ===== */
+
+        function syncContactFields() {
+            const nameEl = document.getElementById('contact-name');
+            const phoneEl = document.getElementById('contact-phone');
+            const bankEl = document.getElementById('contact-bank');
+
+            if (nameEl) state.contactName = nameEl.value;
+            if (phoneEl) state.contactPhone = phoneEl.value;
+            if (bankEl) state.contactBankAccount = bankEl.value;
+        }
+
+        /* ===== Init ===== */
+        render();
+
+    })();
+    </script>
+</body>
+</html>

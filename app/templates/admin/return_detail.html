@@ -1,0 +1,249 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Vratka #{{ return_id }} - Reklamace Proteinaco{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:16px;">
+    <a href="/admin/returns" style="font-size:0.9rem;">&larr; Zpet na seznam</a>
+</div>
+
+<div id="detail-loading" class="loading-spinner">Nacitam...</div>
+
+<div id="detail-content" style="display:none;">
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
+        <h1 style="font-size:1.5rem;" id="detail-code"></h1>
+        <span id="detail-status-badge"></span>
+    </div>
+
+    <div class="grid-2">
+        <!-- Left column: info -->
+        <div>
+            <!-- Customer info -->
+            <div class="card">
+                <div class="card-header">Zakaznik</div>
+                <table>
+                    <tr><td style="width:140px; color:#777;">Jmeno</td><td id="detail-name"></td></tr>
+                    <tr><td style="color:#777;">Email</td><td id="detail-email"></td></tr>
+                    <tr><td style="color:#777;">Telefon</td><td id="detail-phone"></td></tr>
+                    <tr><td style="color:#777;">Bankovni ucet</td><td id="detail-bank"></td></tr>
+                </table>
+            </div>
+
+            <!-- Order info -->
+            <div class="card">
+                <div class="card-header">Objednavka</div>
+                <table>
+                    <tr><td style="width:140px; color:#777;">Kod objednavky</td><td id="detail-order-code"></td></tr>
+                    <tr><td style="color:#777;">Sledovaci cislo</td><td id="detail-tracking"></td></tr>
+                </table>
+            </div>
+
+            <!-- Items -->
+            <div class="card">
+                <div class="card-header">Polozky</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Produkt</th>
+                            <th>Mnozstvi</th>
+                            <th class="text-right">Cena/ks</th>
+                            <th>Duvod</th>
+                            <th>Poznamka</th>
+                            <th class="text-right">Vraceni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detail-items"></tbody>
+                    <tfoot>
+                        <tr style="font-weight:700; border-top:2px solid #ddd;">
+                            <td colspan="5">Celkem k vraceni</td>
+                            <td class="text-right" id="detail-total"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Shipping label -->
+            <div class="card" id="label-card" style="display:none;">
+                <div class="card-header">Prepravni stitek</div>
+                <a href="#" id="detail-label-link" class="btn btn-secondary btn-sm" target="_blank">Stahnout stitek</a>
+            </div>
+        </div>
+
+        <!-- Right column: timeline + actions -->
+        <div>
+            <!-- Actions -->
+            <div class="card" id="actions-card">
+                <div class="card-header">Akce</div>
+                <div id="actions-buttons" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+                <div class="form-group mt-16" id="admin-note-group">
+                    <label>Poznamka admina</label>
+                    <textarea class="form-control" id="detail-admin-note" placeholder="Interni poznamka..."></textarea>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="card">
+                <div class="card-header">Historie stavu</div>
+                <div class="timeline" id="detail-timeline"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject modal -->
+<div class="modal-overlay" id="reject-modal">
+    <div class="modal-box">
+        <h3>Zamitnout vratku</h3>
+        <div class="form-group">
+            <label for="reject-reason">Duvod zamitnuti</label>
+            <textarea class="form-control" id="reject-reason" placeholder="Zadejte duvod..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal('reject-modal')">Zrusit</button>
+            <button class="btn btn-danger" onclick="doReject()">Zamitnout</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var returnId = {{ return_id }};
+var returnData = null;
+
+async function loadDetail() {
+    var data = await apiGet('/api/v1/admin/returns/' + returnId);
+    if (!data) return;
+    returnData = data;
+    renderDetail(data);
+}
+
+function renderDetail(d) {
+    document.getElementById('detail-code').textContent = d.code;
+    document.getElementById('detail-status-badge').innerHTML = statusBadge(d.status);
+    document.getElementById('detail-name').textContent = d.customer_name || '-';
+    document.getElementById('detail-email').textContent = d.customer_email || '-';
+    document.getElementById('detail-phone').textContent = d.customer_phone || '-';
+    document.getElementById('detail-bank').textContent = d.bank_account || '-';
+    document.getElementById('detail-order-code').textContent = d.order_code || '-';
+    document.getElementById('detail-tracking').textContent = d.tracking_number || '-';
+    document.getElementById('detail-admin-note').value = d.admin_note || '';
+
+    // Shipping label
+    if (d.shipping_label_url) {
+        document.getElementById('label-card').style.display = 'block';
+        document.getElementById('detail-label-link').href = d.shipping_label_url;
+    }
+
+    // Items
+    var itemsBody = document.getElementById('detail-items');
+    itemsBody.innerHTML = '';
+    (d.items || []).forEach(function(item) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td><strong>' + escapeHtml(item.product_name) + '</strong><br><span class="text-muted" style="font-size:0.8rem;">' + escapeHtml(item.product_code) + '</span></td>' +
+            '<td>' + item.quantity + '</td>' +
+            '<td class="text-right">' + formatCurrency(item.unit_price) + '</td>' +
+            '<td>' + reasonLabel(item.reason) + '</td>' +
+            '<td>' + escapeHtml(item.comment || '-') + '</td>' +
+            '<td class="text-right font-bold">' + formatCurrency(item.refund_amount) + '</td>';
+        itemsBody.appendChild(tr);
+    });
+    document.getElementById('detail-total').textContent = formatCurrency(d.total_refund_amount);
+
+    // Timeline
+    renderTimeline(d.status_history || []);
+
+    // Actions
+    renderActions(d.status);
+
+    document.getElementById('detail-loading').style.display = 'none';
+    document.getElementById('detail-content').style.display = 'block';
+}
+
+function renderTimeline(history) {
+    var container = document.getElementById('detail-timeline');
+    container.innerHTML = '';
+    // Show newest first
+    var sorted = history.slice().reverse();
+    sorted.forEach(function(entry) {
+        var div = document.createElement('div');
+        div.className = 'timeline-item';
+        div.innerHTML =
+            '<div class="timeline-date">' + formatDate(entry.created_at) + '</div>' +
+            '<div class="timeline-status">' +
+                (entry.old_status ? statusBadge(entry.old_status) + ' &rarr; ' : '') +
+                statusBadge(entry.new_status) +
+            '</div>' +
+            (entry.note ? '<div class="timeline-note">' + escapeHtml(entry.note) + '</div>' : '') +
+            (entry.changed_by ? '<div class="timeline-user">' + escapeHtml(entry.changed_by) + '</div>' : '');
+        container.appendChild(div);
+    });
+    if (sorted.length === 0) {
+        container.innerHTML = '<span class="text-muted">Zadna historie.</span>';
+    }
+}
+
+function renderActions(status) {
+    var container = document.getElementById('actions-buttons');
+    container.innerHTML = '';
+
+    if (status === 'waiting_for_delivery') {
+        addActionBtn(container, 'Prijato na sklad', 'btn-primary', function() {
+            if (confirm('Opravdu oznacit jako prijato na sklad?')) doAction('receive');
+        });
+    }
+    if (status === 'received_inspecting') {
+        addActionBtn(container, 'Schvalit', 'btn-success', function() {
+            if (confirm('Opravdu schvalit tuto vratku?')) doAction('approve');
+        });
+        addActionBtn(container, 'Zamitnout', 'btn-danger', function() {
+            openModal('reject-modal');
+        });
+    }
+    if (status === 'refund_ready') {
+        addActionBtn(container, 'Penize odeslany', 'btn-success', function() {
+            if (confirm('Potvrdit odeslani penez?')) doAction('mark-refunded');
+        });
+    }
+
+    if (container.innerHTML === '') {
+        container.innerHTML = '<span class="text-muted">Zadne dostupne akce pro tento stav.</span>';
+    }
+}
+
+function addActionBtn(container, label, cls, handler) {
+    var btn = document.createElement('button');
+    btn.className = 'btn ' + cls;
+    btn.textContent = label;
+    btn.onclick = handler;
+    container.appendChild(btn);
+}
+
+async function doAction(action) {
+    var data = await apiPost('/api/v1/admin/returns/' + returnId + '/' + action);
+    if (data) {
+        showSuccess('Akce provedena uspesne.');
+        loadDetail();
+    }
+}
+
+async function doReject() {
+    var reason = document.getElementById('reject-reason').value.trim();
+    if (!reason) {
+        showError('Duvod je povinny.');
+        return;
+    }
+    var data = await apiPost('/api/v1/admin/returns/' + returnId + '/reject', { reason: reason });
+    if (data) {
+        closeModal('reject-modal');
+        showSuccess('Vratka zamitnuta.');
+        loadDetail();
+    }
+}
+
+loadDetail();
+</script>
+{% endblock %}

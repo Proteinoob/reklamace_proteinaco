@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Změna stavu</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f6f8; font-family: Arial, Helvetica, sans-serif; color: #333333;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f6f8;">
+        <tr>
+            <td align="center" style="padding: 30px 15px;">
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #1a7f5a; padding: 25px 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: 1px;">PROTEINACO</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            <h2 style="margin: 0 0 20px 0; font-size: 20px; color: #1a7f5a;">Změna stavu {% if case_type == "return" %}vratky{% else %}reklamace{% endif %}</h2>
+
+                            <p style="margin: 0 0 15px 0; font-size: 15px; line-height: 1.6;">
+                                Stav vaší {% if case_type == "return" %}vratky{% else %}reklamace{% endif %} <strong>{{ code }}</strong> se změnil.
+                            </p>
+
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 25px;">
+                                <tr>
+                                    <td style="background-color: #e8f5f0; padding: 20px; border-radius: 6px; text-align: center;">
+                                        <p style="margin: 0 0 5px 0; font-size: 13px; color: #666666;">Nový stav:</p>
+                                        <p style="margin: 0; font-size: 18px; font-weight: 700; color: #1a7f5a;">{{ status_label }}</p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #333333;">Co očekávat dále:</h3>
+                            {% if new_status == "received" %}
+                            <p style="margin: 0 0 15px 0; font-size: 14px; line-height: 1.6; color: #555555;">
+                                Váš balík jsme přijali a nyní probíhá kontrola zaslaného zboží. O dalším průběhu vás budeme informovat.
+                            </p>
+                            {% elif new_status == "in_review" %}
+                            <p style="margin: 0 0 15px 0; font-size: 14px; line-height: 1.6; color: #555555;">
+                                Vaše {% if case_type == "return" %}vratka{% else %}reklamace{% endif %} je nyní posuzována naším týmem. Výsledek vám sdělíme co nejdříve.
+                            </p>
+                            {% elif new_status == "approved" %}
+                            <p style="margin: 0 0 15px 0; font-size: 14px; line-height: 1.6; color: #555555;">
+                                Vaše {% if case_type == "return" %}vratka{% else %}reklamace{% endif %} byla schválena. Brzy obdržíte informace o způsobu vyřízení.
+                            </p>
+                            {% elif new_status == "shipped" %}
+                            <p style="margin: 0 0 15px 0; font-size: 14px; line-height: 1.6; color: #555555;">
+                                Náhradní zboží bylo odesláno. Sledujte zásilku pomocí trackingového čísla, které obdržíte od přepravce.
+                            </p>
+                            {% else %}
+                            <p style="margin: 0 0 15px 0; font-size: 14px; line-height: 1.6; color: #555555;">
+                                O dalším průběhu vás budeme informovat e-mailem.
+                            </p>
+                            {% endif %}
+
+                            <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #555555;">
+                                Aktuální stav můžete kdykoliv zkontrolovat na webu pod kódem <strong>{{ code }}</strong>.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 20px 30px; border-top: 1px solid #e0e0e0;">
+                            <p style="margin: 0 0 5px 0; font-size: 13px; color: #888888; text-align: center;">
+                                Máte otázky? Napište nám na <a href="mailto:info@proteinaco.cz" style="color: #1a7f5a; text-decoration: none;">info@proteinaco.cz</a>
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #aaaaaa; text-align: center;">
+                                Proteinaco s.r.o.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
