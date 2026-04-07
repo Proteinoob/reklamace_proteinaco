@@ -1624,10 +1624,23 @@
                 state.currentStep = 'confirmation';
                 state.error = null;
             } catch (err) {
+                if (handleExistingCaseError(err.message, 'complaint')) return;
                 state.error = err.message;
             }
 
             render();
+        }
+
+        /* Handle EXISTING:{code}|message errors — redirect to tracking */
+        function handleExistingCaseError(msg, type) {
+            if (!msg || !msg.startsWith('EXISTING:')) return false;
+            const parts = msg.substring('EXISTING:'.length).split('|', 2);
+            const code = parts[0];
+            state.trackCode = code;
+            state.trackEmail = state.lookupEmail;
+            state.trackingType = type;
+            handleTrack();
+            return true;
         }
 
         async function uploadPhotos(complaintCode) {
