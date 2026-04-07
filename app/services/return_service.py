@@ -206,12 +206,14 @@ async def create_return(
                 value=total_refund,
             )
         if packet and packet.get("packet_id"):
-            label_url = (
+            # Store the direct Zásilkovna URL for internal use
+            return_req.shipping_label_url = (
                 f"https://www.zasilkovna.cz/api/packetLabelPdf"
                 f"?packetId={packet['packet_id']}"
             )
-            return_req.shipping_label_url = label_url
             return_req.tracking_number = packet.get("barcode")
+            # Public label URL goes through our proxy (Zásilkovna requires API key)
+            label_url = f"/api/v1/customer/returns/{code}/label"
     except (ZasilkovnaError, Exception) as e:
         logger.error("Zásilkovna packet creation failed for %s: %s", code, e)
 
