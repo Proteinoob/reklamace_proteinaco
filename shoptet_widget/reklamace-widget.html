@@ -1703,6 +1703,42 @@
             return true;
         }
 
+        function showExistingCaseModal(cases, email) {
+            const modal = document.getElementById('existing-case-modal');
+            const title = document.getElementById('modal-title');
+            const msg = document.getElementById('modal-message');
+            const trackBtn = document.getElementById('modal-track-btn');
+            const continueBtn = document.getElementById('modal-continue-btn');
+
+            const lines = cases.map(c =>
+                `<strong class="case-code">${escapeHtml(c.code)}</strong> (${escapeHtml(c.label)})`
+            ).join('<br>');
+
+            title.textContent = 'Existující případ';
+            msg.innerHTML = `Pro tuto objednávku již existuje:<br>${lines}<br><br>Jak chcete pokračovat?`;
+
+            // Track button — go to first existing case
+            trackBtn.onclick = async () => {
+                modal.classList.remove('active');
+                state.trackCode = cases[0].code;
+                state.trackEmail = email;
+                await handleTrack();
+            };
+
+            // Continue button — dismiss and show form
+            continueBtn.onclick = () => {
+                modal.classList.remove('active');
+                if (state.flowType === 'return') {
+                    state.currentStep = 'return-form';
+                } else {
+                    state.currentStep = 'complaint-form';
+                }
+                render();
+            };
+
+            modal.classList.add('active');
+        }
+
         async function uploadPhotos(complaintCode) {
             const formData = new FormData();
             formData.append('email', state.lookupEmail);
