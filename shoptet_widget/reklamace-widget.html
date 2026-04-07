@@ -1473,14 +1473,17 @@
                 state.contactName = data.customer_name || '';
                 state.error = null;
 
-                /* Check for existing active case — redirect to tracking */
-                const existingCode = state.flowType === 'return'
-                    ? data.existing_return_code
-                    : data.existing_complaint_code;
-                if (existingCode) {
-                    state.trackCode = existingCode;
-                    state.trackEmail = email;
-                    await handleTrack();
+                /* Check for existing active cases — show modal if any exist */
+                const existingCases = [];
+                if (data.existing_return_code) {
+                    existingCases.push({ code: data.existing_return_code, type: 'return', label: 'vrácení zboží' });
+                }
+                if (data.existing_complaint_code) {
+                    existingCases.push({ code: data.existing_complaint_code, type: 'complaint', label: 'reklamace' });
+                }
+
+                if (existingCases.length > 0) {
+                    showExistingCaseModal(existingCases, email);
                     return;
                 }
 
