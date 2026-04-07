@@ -61,7 +61,10 @@ app.include_router(admin_views_router)
 async def reklamace_test():
     """Serve the customer-facing widget for testing."""
     widget_path = Path(__file__).parent.parent / "shoptet_widget" / "reklamace-widget.html"
-    return HTMLResponse(content=widget_path.read_text(encoding="utf-8"))
+    return HTMLResponse(
+        content=widget_path.read_text(encoding="utf-8"),
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+    )
 
 
 @app.get("/health")
