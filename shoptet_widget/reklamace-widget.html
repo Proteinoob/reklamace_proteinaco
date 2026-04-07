@@ -1569,7 +1569,7 @@
                 state.currentStep = 'confirmation';
                 state.error = null;
             } catch (err) {
-                if (handleExistingCaseError(err.message, 'return')) return;
+                if (await handleExistingCaseError(err.message, 'return')) return;
                 state.error = err.message;
             }
 
