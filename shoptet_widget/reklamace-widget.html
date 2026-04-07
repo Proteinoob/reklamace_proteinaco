@@ -1437,6 +1437,17 @@
                 state.contactName = data.customer_name || '';
                 state.error = null;
 
+                /* Check for existing active case — redirect to tracking */
+                const existingCode = state.flowType === 'return'
+                    ? data.existing_return_code
+                    : data.existing_complaint_code;
+                if (existingCode) {
+                    state.trackCode = existingCode;
+                    state.trackEmail = email;
+                    await handleTrack();
+                    return;
+                }
+
                 if (state.flowType === 'return') {
                     state.currentStep = 'return-form';
                 } else {
