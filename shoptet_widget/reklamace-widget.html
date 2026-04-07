@@ -1642,14 +1642,14 @@
         }
 
         /* Handle EXISTING:{code}|message errors — redirect to tracking */
-        function handleExistingCaseError(msg, type) {
+        async function handleExistingCaseError(msg, type) {
             if (!msg || !msg.startsWith('EXISTING:')) return false;
             const parts = msg.substring('EXISTING:'.length).split('|', 2);
             const code = parts[0];
             state.trackCode = code;
             state.trackEmail = state.lookupEmail;
             state.trackingType = type;
-            handleTrack();
+            await handleTrack();
             return true;
         }
 
