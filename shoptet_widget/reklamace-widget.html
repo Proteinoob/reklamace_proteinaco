@@ -573,9 +573,8 @@
 
         /* ===== Configuration ===== */
         const CONFIG = {
-            API_BASE: 'https://reklamace-api.proteinaco.cz/api/v1/customer',
-            // Override for local dev:
-            // API_BASE: 'http://localhost:8040/api/v1/customer',
+            // Auto-detect API base from current page origin
+            API_BASE: window.location.origin + '/api/v1/customer',
             MAX_PHOTOS: 5,
             MAX_PHOTO_SIZE_MB: 5,
         };

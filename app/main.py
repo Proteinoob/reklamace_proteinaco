@@ -6,7 +6,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 
 from app.core.config import settings
 from app.core.database import init_db
@@ -55,6 +55,13 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 app.include_router(customer_router)
 app.include_router(admin_router)
 app.include_router(admin_views_router)
+
+
+@app.get("/reklamace-test", response_class=HTMLResponse)
+async def reklamace_test():
+    """Serve the customer-facing widget for testing."""
+    widget_path = Path(__file__).parent.parent / "shoptet_widget" / "reklamace-widget.html"
+    return HTMLResponse(content=widget_path.read_text(encoding="utf-8"))
 
 
 @app.get("/health")
