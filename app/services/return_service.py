@@ -114,10 +114,39 @@ async def lookup_order(request: OrderLookupRequest) -> OrderLookupResponse:
     )
 
 
+_ACTIVE_RETURN_STATUSES = {
+    ReturnStatus.NEW.value,
+    ReturnStatus.WAITING_FOR_DELIVERY.value,
+    ReturnStatus.RECEIVED_INSPECTING.value,
+    ReturnStatus.APPROVED.value,
+    ReturnStatus.REFUND_READY.value,
+}
+
+
+def check_existing_return(order_code: str, email: str, db: Session) -> ReturnRequest | None:
+    """Check if an active return already exists for this order + email."""
+    return (
+        db.query(ReturnRequest)
+        .filter(
+            ReturnRequest.order_code == order_code,
+            ReturnRequest.customer_email == email.lower().strip(),
+            ReturnRequest.status.in_(_ACTIVE_RETURN_STATUSES),
+        )
+        .first()
+    )
+
+
 async def create_return(
     request: ReturnCreateRequest, db: Session
 ) -> ReturnCreateResponse:
     """Create a new return request with all associated items."""
+    # 0. Check for existing active return on this order
+    existing = check_existing_return(request.order_code, request.email, db)
+    if existing:
+        raise ValueError(
+            f"EXISTING:{existing.code}|Pro tuto objednávku již existuje aktivní vratka {existing.code}."
+        )
+
     # 1. Lookup order via Shoptet to validate and get product details
     order_lookup = OrderLookupRequest(
         order_code=request.order_code, email=request.email
