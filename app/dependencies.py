@@ -3,11 +3,20 @@ from typing import Optional
 from fastapi import Header, HTTPException, status
 
 from app.core.auth import decode_token
+from app.core.config import settings
 from app.core.database import get_sqlalchemy_session
 
 
 def get_db():
     yield from get_sqlalchemy_session()
+
+
+_DEBUG_ADMIN = {
+    "sub": 0,
+    "username": "test-admin",
+    "role": "admin",
+    "allowed_apps": ["reklamace"],
+}
 
 
 def get_current_admin(
@@ -17,8 +26,12 @@ def get_current_admin(
 
     Checks that the token is valid and that 'reklamace' is in allowed_apps.
     Returns user data dict with keys: sub, username, role, allowed_apps.
+
+    In DEBUG mode, returns a mock admin when no token is provided.
     """
     if not authorization:
+        if settings.DEBUG:
+            return _DEBUG_ADMIN
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authorization header missing",
