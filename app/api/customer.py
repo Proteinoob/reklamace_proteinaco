@@ -50,11 +50,26 @@ def _check_rate_limit(ip: str, limit: int, window: int = 60):
 async def lookup_order(
     body: OrderLookupRequest,
     request: Request,
+    db: Session = Depends(get_db),
 ):
     """Look up an order by code and email. No auth required."""
     _check_rate_limit(request.client.host, limit=10)
     try:
         result = await return_service.lookup_order(body)
+
+        # Check for existing active cases
+        existing_ret = return_service.check_existing_return(
+            body.order_code, body.email, db
+        )
+        if existing_ret:
+            result.existing_return_code = existing_ret.code
+
+        existing_comp = complaint_service.check_existing_complaint(
+            body.order_code, body.email, db
+        )
+        if existing_comp:
+            result.existing_complaint_code = existing_comp.code
+
         return result
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
