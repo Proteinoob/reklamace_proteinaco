@@ -79,6 +79,7 @@ class EmailService:
                 username=self.smtp_user,
                 password=self.smtp_password,
                 use_tls=True,
+                timeout=10,
             )
             logger.info(f"Email sent to {to_email}: {subject}")
             return True
