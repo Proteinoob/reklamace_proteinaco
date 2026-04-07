@@ -29,26 +29,27 @@ def get_current_admin(
 
     In DEBUG mode, returns a mock admin when no token is provided.
     """
-    if not authorization:
-        if settings.DEBUG:
-            return _DEBUG_ADMIN
+    # Extract token (may be missing or empty)
+    token = None
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization[7:].strip() or None
+
+    # DEBUG mode: skip auth when no valid token
+    if not token and settings.DEBUG:
+        return _DEBUG_ADMIN
+
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization header missing",
+            detail="Authorization header missing or empty",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization format",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    token = authorization[7:]
     user_data = decode_token(token)
 
     if not user_data:
+        if settings.DEBUG:
+            return _DEBUG_ADMIN
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
