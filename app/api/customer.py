@@ -165,6 +165,46 @@ async def track_return(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+# --------------- Download return label ---------------
+
+
+@router.get("/returns/{code}/label")
+async def download_return_label(
+    code: str,
+    db: Session = Depends(get_db),
+):
+    """Download Zásilkovna shipping label PDF for a return."""
+    from app.models.return_request import ReturnRequest
+    from app.services.zasilkovna import ZasilkovnaClient, ZasilkovnaError
+
+    return_req = db.query(ReturnRequest).filter(ReturnRequest.code == code).first()
+    if not return_req:
+        raise HTTPException(status_code=404, detail="Vrácení nenalezeno")
+    if not return_req.tracking_number:
+        raise HTTPException(status_code=404, detail="Štítek není k dispozici")
+
+    # Extract packet_id from tracking data or use the stored barcode
+    # The barcode from Zásilkovna is the packet_id for label retrieval
+    packet_id = return_req.tracking_number
+    # If we stored the numeric packet_id separately, prefer it
+    if return_req.shipping_label_url and "packetId=" in return_req.shipping_label_url:
+        packet_id = return_req.shipping_label_url.split("packetId=")[-1]
+
+    try:
+        async with ZasilkovnaClient() as client:
+            pdf_data = await client.get_label_pdf(packet_id)
+        return Response(
+            content=pdf_data,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"inline; filename=stitek-{code}.pdf"},
+        )
+    except ZasilkovnaError as exc:
+        raise HTTPException(status_code=502, detail=f"Zásilkovna error: {exc}")
+    except Exception as exc:
+        logger.error("download_return_label failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Nepodařilo se stáhnout štítek")
+
+
 # --------------- Track complaint ---------------
 
 
