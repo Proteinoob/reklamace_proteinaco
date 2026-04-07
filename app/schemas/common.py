@@ -37,6 +37,8 @@ class OrderLookupResponse(BaseModel):
     customer_email: str
     order_date: Optional[str] = None
     items: list[OrderProductItem]
+    existing_return_code: Optional[str] = None
+    existing_complaint_code: Optional[str] = None
 
 
 class StatusHistoryEntry(BaseModel):
