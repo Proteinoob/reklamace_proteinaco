@@ -125,6 +125,28 @@ def generate_complaint_code(db: Session) -> str:
 # --------------- Create complaint ---------------
 
 
+_ACTIVE_COMPLAINT_STATUSES = {
+    ComplaintStatus.NEW.value,
+    ComplaintStatus.WAITING_FOR_ASSESSMENT.value,
+    ComplaintStatus.NEED_MORE_INFO.value,
+    ComplaintStatus.ASSESSING.value,
+    ComplaintStatus.APPROVED.value,
+}
+
+
+def check_existing_complaint(order_code: str, email: str, db: Session) -> Complaint | None:
+    """Check if an active complaint already exists for this order + email."""
+    return (
+        db.query(Complaint)
+        .filter(
+            Complaint.order_code == order_code,
+            Complaint.customer_email == email.lower().strip(),
+            Complaint.status.in_(_ACTIVE_COMPLAINT_STATUSES),
+        )
+        .first()
+    )
+
+
 async def create_complaint(
     request: ComplaintCreateRequest,
     db: Session,
@@ -133,6 +155,13 @@ async def create_complaint(
     email_service: EmailService | None = None,
 ) -> ComplaintCreateResponse:
     """Create a new complaint with items, Zasilkovna label, and confirmation email."""
+    # 0. Check for existing active complaint on this order
+    existing = check_existing_complaint(request.order_code, request.email, db)
+    if existing:
+        raise ValueError(
+            f"EXISTING:{existing.code}|Pro tuto objednávku již existuje aktivní reklamace {existing.code}."
+        )
+
     # 1. Lookup order via Shoptet
     client = shoptet_client or ShoptetClient()
     order_data = await client.get_order(request.order_code)
