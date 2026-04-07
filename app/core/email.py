@@ -50,6 +50,9 @@ class EmailService:
         attachment: Optional[tuple[str, bytes]] = None,
     ) -> bool:
         """Send an email with HTML and plain-text parts, optional PDF attachment."""
+        if not self.smtp_host or not self.smtp_user:
+            logger.info("SMTP not configured, skipping email to %s: %s", to_email, subject)
+            return False
         try:
             msg = MIMEMultipart("mixed")
             msg["Subject"] = _sanitize_header(subject)
