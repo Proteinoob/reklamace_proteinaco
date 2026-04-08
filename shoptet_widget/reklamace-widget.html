@@ -1157,16 +1157,6 @@
                     </div>
                     ` : ''}
 
-                    ${result.coupon_code ? `
-                    <div class="card" style="text-align:center; background:#f0f9f5; border:2px solid #09A57C; margin-bottom:20px;">
-                        <p style="font-size:0.9rem; color:#666; margin-bottom:4px;">Váš slevový kupón:</p>
-                        <p style="font-size:1.5rem; font-weight:800; color:#09A57C; letter-spacing:2px; margin-bottom:4px;">
-                            ${escapeHtml(result.coupon_code)}
-                        </p>
-                        <p style="font-size:0.85rem; color:#888;">Použijte při dalším nákupu v košíku.</p>
-                    </div>
-                    ` : ''}
-
                     ${result.label_url ? `
                     <ol class="steps-list">
                         <li>
