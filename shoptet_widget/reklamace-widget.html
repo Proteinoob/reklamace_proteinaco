@@ -1157,8 +1157,18 @@
                     </div>
                     ` : ''}
 
+                    ${result.coupon_code ? `
+                    <div class="card" style="text-align:center; background:#f0f9f5; border:2px solid #09A57C; margin-bottom:20px;">
+                        <p style="font-size:0.9rem; color:#666; margin-bottom:4px;">Váš slevový kupón:</p>
+                        <p style="font-size:1.5rem; font-weight:800; color:#09A57C; letter-spacing:2px; margin-bottom:4px;">
+                            ${escapeHtml(result.coupon_code)}
+                        </p>
+                        <p style="font-size:0.85rem; color:#888;">Použijte při dalším nákupu v košíku.</p>
+                    </div>
+                    ` : ''}
+
+                    ${result.label_url ? `
                     <ol class="steps-list">
-                        ${result.label_url ? `
                         <li>
                             Stáhněte přepravní štítek<br>
                             <a href="${escapeHtml(result.label_url)}" class="btn btn-secondary btn-sm"
@@ -1166,17 +1176,17 @@
                                 &#x1F4E5; Stáhnout štítek
                             </a>
                         </li>
-                        ` : `
-                        <li>Obdržíte e-mail s dalšími instrukcemi</li>
-                        `}
                         <li>Zabalte zboží do původního nebo vhodného obalu</li>
                         <li>Zaneste zásilku s přepravním štítkem na nejbližší pobočku Zásilkovny</li>
                     </ol>
 
-                    ${isReturn && result.label_url ? `
                     <div class="alert alert-info" style="margin-top:16px; font-size:0.9rem;">
                         Štítek není nutné tisknout — na pobočce Zásilkovny stačí nahlásit číslo pod čárovým kódem.
                     </div>
+                    ` : !result.coupon_code ? `
+                    <ol class="steps-list">
+                        <li>Budeme vás kontaktovat s dalšími instrukcemi</li>
+                    </ol>
                     ` : ''}
 
                     <p style="margin-top:20px; color:#666; font-size:0.95rem;">
