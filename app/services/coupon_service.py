@@ -60,7 +60,7 @@ async def create_coupon(
     amount_str = f"{amount:.2f}"
 
     # Valid for 90 days
-    valid_to = (datetime.now(timezone.utc) + timedelta(days=90)).strftime("%Y-%m-%dT%H:%M:%S+0000")
+    valid_to = (datetime.now(timezone.utc) + timedelta(days=90)).strftime("%Y-%m-%d")
 
     client = shoptet_client or ShoptetClient()
     try:
