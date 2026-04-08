@@ -673,6 +673,9 @@
             selectedProduct: null,
             complaintPhotos: [],
             preferredResolution: 'refund',
+            complaintProblemDesc: '',
+            complaintDiscoveryDate: '',
+            complaintDosesTaken: '',
             // Contact fields
             contactName: '',
             contactPhone: '',
@@ -961,6 +964,11 @@
 
                     ${state.error ? `<div class="alert alert-error">${escapeHtml(state.error)}</div>` : ''}
 
+                    <div class="alert alert-info" style="margin-bottom:20px; font-size:0.9rem; line-height:1.5;">
+                        Vrácení zboží je možné do <strong>14 dnů od převzetí objednávky</strong>.
+                        Vrátit lze pouze <strong>neotevřené a nepoškozené zboží</strong> v původním obalu.
+                    </div>
+
                     <h2>Vyberte položky k vrácení</h2>
                     ${itemsHtml}
 
@@ -1055,17 +1063,17 @@
                     <div class="form-group">
                         <label for="problem-desc">Popište problém *</label>
                         <textarea id="problem-desc" placeholder="Popište co se stalo, jaký je problém s produktem..."
-                                  rows="4"></textarea>
+                                  rows="4">${escapeHtml(state.complaintProblemDesc)}</textarea>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label for="discovery-date">Kdy jste problém zjistil/a</label>
-                            <input type="date" id="discovery-date">
+                            <input type="date" id="discovery-date" value="${escapeHtml(state.complaintDiscoveryDate)}">
                         </div>
                         <div class="form-group">
                             <label for="doses-taken">Kolik dávek jste odebral/a</label>
-                            <input type="number" id="doses-taken" min="0" placeholder="např. 5">
+                            <input type="number" id="doses-taken" min="0" placeholder="např. 5" value="${escapeHtml(state.complaintDosesTaken)}">
                         </div>
                     </div>
 
@@ -1162,8 +1170,14 @@
                         <li>Obdržíte e-mail s dalšími instrukcemi</li>
                         `}
                         <li>Zabalte zboží do původního nebo vhodného obalu</li>
-                        <li>Podejte zásilku na Zásilkovně</li>
+                        <li>Zaneste zásilku s přepravním štítkem na nejbližší pobočku Zásilkovny</li>
                     </ol>
+
+                    ${isReturn && result.label_url ? `
+                    <div class="alert alert-info" style="margin-top:16px; font-size:0.9rem;">
+                        Štítek není nutné tisknout — na pobočce Zásilkovny stačí nahlásit číslo pod čárovým kódem.
+                    </div>
+                    ` : ''}
 
                     <p style="margin-top:20px; color:#666; font-size:0.95rem;">
                         E-mail s potvrzením byl odeslán na
@@ -1440,6 +1454,13 @@
             if (contactNameEl) contactNameEl.addEventListener('input', (e) => { state.contactName = e.target.value; });
             if (contactPhoneEl) contactPhoneEl.addEventListener('input', (e) => { state.contactPhone = e.target.value; });
             if (contactBankEl) contactBankEl.addEventListener('input', (e) => { state.contactBankAccount = e.target.value; });
+
+            const problemDescEl = document.getElementById('problem-desc');
+            const discoveryDateEl = document.getElementById('discovery-date');
+            const dosesTakenEl = document.getElementById('doses-taken');
+            if (problemDescEl) problemDescEl.addEventListener('input', (e) => { state.complaintProblemDesc = e.target.value; });
+            if (discoveryDateEl) discoveryDateEl.addEventListener('input', (e) => { state.complaintDiscoveryDate = e.target.value; });
+            if (dosesTakenEl) dosesTakenEl.addEventListener('input', (e) => { state.complaintDosesTaken = e.target.value; });
         }
 
         /* ===== Action handlers ===== */
@@ -1630,9 +1651,9 @@
             syncContactFields();
 
             const name = state.contactName.trim();
-            const problemDesc = document.getElementById('problem-desc')?.value?.trim();
-            const discoveryDate = document.getElementById('discovery-date')?.value || null;
-            const dosesTaken = document.getElementById('doses-taken')?.value;
+            const problemDesc = state.complaintProblemDesc.trim();
+            const discoveryDate = state.complaintDiscoveryDate || null;
+            const dosesTaken = state.complaintDosesTaken;
 
             if (!name) {
                 state.error = 'Vyplňte jméno a příjmení.';

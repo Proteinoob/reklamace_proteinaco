@@ -194,7 +194,8 @@ async def create_complaint(
     total_value = 0.0
     for req_item in request.items:
         order_item = order_items_map.get(req_item.product_code, {})
-        unit_price = order_item.get("itemPrice", {}).get("withVat", 0.0)
+        raw_price = order_item.get("itemPrice", {}).get("withVat", 0)
+        unit_price = float(raw_price) if raw_price else 0.0
         product_name = order_item.get("name", req_item.product_code)
 
         ci = ComplaintItem(

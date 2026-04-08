@@ -271,10 +271,9 @@ async def create_return(
     # 8. Build response
     instructions = (
         f"Vaše žádost o vrácení {code} byla přijata. "
-        "Zabalte prosím zboží a odešlete ho na naši adresu."
+        "Zabalte prosím zboží a zaneste jej s přepravním štítkem "
+        "na nejbližší pobočku Zásilkovny."
     )
-    if label_url:
-        instructions += f" Štítek pro Zásilkovnu najdete na: {label_url}"
 
     return ReturnCreateResponse(
         code=code,
