@@ -1,0 +1,100 @@
+"""
+Coupon service — creates discount coupons via Shoptet API.
+Rule: max 1 coupon per order_code.
+"""
+import logging
+import secrets
+import string
+from datetime import datetime, timedelta, timezone
+
+from sqlalchemy.orm import Session
+
+from app.models.complaint import Complaint
+from app.services.shoptet_client import ShoptetClient
+
+logger = logging.getLogger(__name__)
+
+# Shoptet coupon template UUID (from existing coupons in the eshop)
+COUPON_TEMPLATE = "04a9b7ac-869c-11e9-beb1-002590dad85e"
+
+
+def _generate_coupon_code(complaint_code: str) -> str:
+    """Generate a unique coupon code like RK-RE-2026-0001-A3X."""
+    suffix = "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(3))
+    return f"RK-{complaint_code}-{suffix}"
+
+
+def has_coupon_for_order(order_code: str, db: Session) -> str | None:
+    """Check if a coupon was already issued for this order. Returns coupon_code or None."""
+    existing = (
+        db.query(Complaint.coupon_code)
+        .filter(
+            Complaint.order_code == order_code,
+            Complaint.coupon_code.isnot(None),
+        )
+        .first()
+    )
+    return existing[0] if existing else None
+
+
+async def create_coupon(
+    complaint_code: str,
+    order_code: str,
+    amount: float,
+    db: Session,
+    shoptet_client: ShoptetClient | None = None,
+) -> str | None:
+    """Create a Shoptet discount coupon for a complaint.
+
+    Returns coupon code or None on failure.
+    Enforces 1 coupon per order_code.
+    """
+    # Check if coupon already exists for this order
+    existing = has_coupon_for_order(order_code, db)
+    if existing:
+        logger.info("Coupon already exists for order %s: %s", order_code, existing)
+        return existing
+
+    coupon_code = _generate_coupon_code(complaint_code)
+    # Round amount to 2 decimals
+    amount_str = f"{amount:.2f}"
+
+    # Valid for 90 days
+    valid_to = (datetime.now(timezone.utc) + timedelta(days=90)).strftime("%Y-%m-%dT%H:%M:%S+0000")
+
+    client = shoptet_client or ShoptetClient()
+    try:
+        http = await client._get_client()
+        resp = await http.post(
+            "/api/discount-coupons",
+            json={
+                "data": {
+                    "coupons": [
+                        {
+                            "code": coupon_code,
+                            "discountType": "fixed",
+                            "amount": amount_str,
+                            "currency": "CZK",
+                            "reusable": False,
+                            "validTo": valid_to,
+                            "remark": f"Reklamace {complaint_code}, obj. {order_code}",
+                            "template": COUPON_TEMPLATE,
+                            "shippingPrice": "beforeDiscount",
+                        }
+                    ]
+                }
+            },
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        if data.get("errors"):
+            logger.error("Shoptet coupon creation errors: %s", data["errors"])
+            return None
+
+        logger.info("Coupon %s created for complaint %s (%.2f CZK)", coupon_code, complaint_code, amount)
+        return coupon_code
+
+    except Exception as exc:
+        logger.error("Failed to create coupon for %s: %s", complaint_code, exc)
+        return None
