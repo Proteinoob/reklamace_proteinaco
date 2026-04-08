@@ -1266,9 +1266,9 @@
                     </button>
                     ` : ''}
 
-                    ${isReturn && data.code ? `
+                    ${data.code ? `
                     <div style="margin-bottom:20px;">
-                        <a href="/api/v1/customer/returns/${encodeURIComponent(data.code)}/label"
+                        <a href="/api/v1/customer/${isReturn ? 'returns' : 'complaints'}/${encodeURIComponent(data.code)}/label"
                            class="btn btn-secondary" target="_blank"
                            style="display:inline-flex; align-items:center; gap:8px;">
                             &#x1F4E5; Stáhnout přepravní štítek
