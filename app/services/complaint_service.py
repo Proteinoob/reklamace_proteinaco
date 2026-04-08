@@ -283,20 +283,17 @@ async def create_complaint(
         logger.error("Failed to send confirmation email: %s", exc)
 
     # 7. Build response based on resolution type
-    if resolution == "discount":
-        instructions = (
-            f"Vaši reklamaci {code} jsme přijali. "
-            f"Produkt si můžete ponechat."
-        )
-        if coupon_code:
-            instructions += (
-                f" Slevový kupón na další nákup: {coupon_code}"
-            )
-    elif resolution in ("refund", "new_product"):
+    if resolution in ("refund", "new_product"):
         instructions = (
             f"Vaši reklamaci {code} jsme přijali. "
             "Zabalte prosím zboží a zaneste jej s přepravním štítkem "
             "na nejbližší pobočku Zásilkovny."
+        )
+    elif resolution == "discount":
+        instructions = (
+            f"Vaši reklamaci {code} jsme přijali. "
+            "Produkt si můžete ponechat. Po posouzení reklamace vám "
+            "zašleme slevový kupón na další nákup."
         )
     else:
         instructions = (
@@ -308,7 +305,7 @@ async def create_complaint(
         code=code,
         instructions=instructions,
         label_url=label_url,
-        coupon_code=coupon_code,
+        coupon_code=None,
         preferred_resolution=resolution,
     )
 
