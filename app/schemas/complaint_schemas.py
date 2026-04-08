@@ -120,6 +120,7 @@ class ComplaintTrackingResponse(BaseModel):
     items: list[ComplaintItemDetail]
     photos: list[ComplaintPhotoDetail]
     status_history: list[StatusHistoryEntry]
+    coupon_code: Optional[str] = None
     created_at: datetime
 
 
