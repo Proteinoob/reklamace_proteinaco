@@ -49,6 +49,8 @@ class ComplaintCreateResponse(BaseModel):
     code: str
     instructions: str
     label_url: Optional[str] = None
+    coupon_code: Optional[str] = None
+    preferred_resolution: Optional[str] = None
 
 
 class ComplaintItemDetail(BaseModel):
