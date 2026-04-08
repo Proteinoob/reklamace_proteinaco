@@ -233,40 +233,54 @@ async def create_complaint(
         "system", note="Automaticky prechod po vytvoreni",
     )
 
-    # 5. Create Zasilkovna return packet
+    # 5. Resolution-specific actions
+    resolution = request.items[0].preferred_resolution.value
     label_url = None
-    zas = zasilkovna_client or ZasilkovnaClient()
-    try:
-        name_parts = request.name.split(" ", 1)
-        first_name = name_parts[0]
-        surname = name_parts[1] if len(name_parts) > 1 else ""
+    coupon_code = None
 
-        packet = await zas.create_return_packet(
-            case_code=code,
-            customer_name=first_name,
-            customer_surname=surname,
-            customer_email=request.email,
-            customer_phone=request.phone or "",
-            value=total_value,
-        )
-        # 6. Save label URL
-        packet_id = packet.get("packet_id")
-        if packet_id:
-            # Store direct Zásilkovna URL for internal use
-            complaint.shipping_label_url = (
-                f"https://www.zasilkovna.cz/api/packetLabelPdf"
-                f"?packetId={packet_id}"
+    if resolution in ("refund", "new_product"):
+        # Customer must send product back → create Zásilkovna label
+        zas = zasilkovna_client or ZasilkovnaClient()
+        try:
+            name_parts = request.name.split(" ", 1)
+            first_name = name_parts[0]
+            surname = name_parts[1] if len(name_parts) > 1 else ""
+
+            packet = await zas.create_return_packet(
+                case_code=code,
+                customer_name=first_name,
+                customer_surname=surname,
+                customer_email=request.email,
+                customer_phone=request.phone or "",
+                value=total_value,
             )
-            complaint.tracking_number = packet.get("barcode")
-            # Public label URL goes through our proxy (Zásilkovna requires API key)
-            label_url = f"/api/v1/customer/complaints/{code}/label"
-    except ZasilkovnaError as exc:
-        logger.error("Zasilkovna packet creation failed: %s", exc)
+            packet_id = packet.get("packet_id")
+            if packet_id:
+                complaint.shipping_label_url = (
+                    f"https://www.zasilkovna.cz/api/packetLabelPdf"
+                    f"?packetId={packet_id}"
+                )
+                complaint.tracking_number = packet.get("barcode")
+                label_url = f"/api/v1/customer/complaints/{code}/label"
+        except ZasilkovnaError as exc:
+            logger.error("Zasilkovna packet creation failed: %s", exc)
+
+    elif resolution == "discount":
+        # Customer keeps product → create discount coupon
+        from app.services.coupon_service import create_coupon
+        coupon_code = await create_coupon(
+            complaint_code=code,
+            order_code=request.order_code,
+            amount=total_value,
+            db=db,
+        )
+        if coupon_code:
+            complaint.coupon_code = coupon_code
 
     db.commit()
     db.refresh(complaint)
 
-    # 7. Send confirmation email
+    # 6. Send confirmation email
     email_svc = email_service or EmailService()
     try:
         await email_svc.send_complaint_confirmation(
@@ -278,14 +292,34 @@ async def create_complaint(
     except Exception as exc:
         logger.error("Failed to send confirmation email: %s", exc)
 
-    # 9. Return response
+    # 7. Build response based on resolution type
+    if resolution == "discount":
+        instructions = (
+            f"Vaši reklamaci {code} jsme přijali. "
+            f"Produkt si můžete ponechat."
+        )
+        if coupon_code:
+            instructions += (
+                f" Slevový kupón na další nákup: {coupon_code}"
+            )
+    elif resolution in ("refund", "new_product"):
+        instructions = (
+            f"Vaši reklamaci {code} jsme přijali. "
+            "Zabalte prosím zboží a zaneste jej s přepravním štítkem "
+            "na nejbližší pobočku Zásilkovny."
+        )
+    else:
+        instructions = (
+            f"Vaši reklamaci {code} jsme přijali. "
+            "Budeme vás kontaktovat s dalšími instrukcemi."
+        )
+
     return ComplaintCreateResponse(
         code=code,
-        instructions=(
-            "Vasi reklamaci jsme prijali. "
-            "Zaslete prosim zbozi na nasi adresu pomoci prilozeneho stitku."
-        ),
+        instructions=instructions,
         label_url=label_url,
+        coupon_code=coupon_code,
+        preferred_resolution=resolution,
     )
 
 
