@@ -512,8 +512,9 @@ async def approve_complaint(
     complaint.admin_note = note
     complaint.updated_at = datetime.now(timezone.utc)
 
-    # If resolution is REFUND, create credit note via Shoptet
+    # Resolution-specific actions on admin approval
     if resolution == PreferredResolution.REFUND:
+        # Create credit note via Shoptet
         client = shoptet_client or ShoptetClient()
         try:
             order_data = await client.get_order(complaint.order_code)
@@ -529,6 +530,23 @@ async def approve_complaint(
                     )
         except Exception as exc:
             logger.error("Failed to create credit note: %s", exc)
+
+    elif resolution == PreferredResolution.DISCOUNT:
+        # Create Shoptet discount coupon (1 per order)
+        from app.services.coupon_service import create_coupon
+        total_value = sum(
+            (item.unit_price or 0) * (item.quantity or 1)
+            for item in complaint.items
+        )
+        coupon_code = await create_coupon(
+            complaint_code=complaint.code,
+            order_code=complaint.order_code,
+            amount=total_value,
+            db=db,
+        )
+        if coupon_code:
+            complaint.coupon_code = coupon_code
+            logger.info("Coupon %s created for complaint %s", coupon_code, complaint.code)
 
     history_note = f"Schvaleno - reseni: {resolution.value}"
     if note:
