@@ -36,6 +36,7 @@ class Complaint(Base):
     preferred_resolution = Column(String, nullable=True)
     shipping_label_url = Column(String, nullable=True)
     tracking_number = Column(String, nullable=True)
+    coupon_code = Column(String, nullable=True)
     admin_note = Column(Text, nullable=True)
     photos_count = Column(Integer, default=0)
     photos_deleted_at = Column(TIMESTAMP(timezone=True), nullable=True)
