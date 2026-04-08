@@ -252,12 +252,14 @@ async def create_complaint(
         # 6. Save label URL
         packet_id = packet.get("packet_id")
         if packet_id:
-            label_url = (
+            # Store direct Zásilkovna URL for internal use
+            complaint.shipping_label_url = (
                 f"https://www.zasilkovna.cz/api/packetLabelPdf"
                 f"?packetId={packet_id}"
             )
-            complaint.shipping_label_url = label_url
             complaint.tracking_number = packet.get("barcode")
+            # Public label URL goes through our proxy (Zásilkovna requires API key)
+            label_url = f"/api/v1/customer/complaints/{code}/label"
     except ZasilkovnaError as exc:
         logger.error("Zasilkovna packet creation failed: %s", exc)
 
