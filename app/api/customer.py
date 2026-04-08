@@ -220,6 +220,43 @@ async def download_return_label(
         raise HTTPException(status_code=500, detail="Nepodařilo se stáhnout štítek")
 
 
+# --------------- Download complaint label ---------------
+
+
+@router.get("/complaints/{code}/label")
+async def download_complaint_label(
+    code: str,
+    db: Session = Depends(get_db),
+):
+    """Download Zásilkovna shipping label PDF for a complaint."""
+    from app.models.complaint import Complaint
+    from app.services.zasilkovna import ZasilkovnaClient, ZasilkovnaError
+
+    complaint = db.query(Complaint).filter(Complaint.code == code).first()
+    if not complaint:
+        raise HTTPException(status_code=404, detail="Reklamace nenalezena")
+    if not complaint.tracking_number:
+        raise HTTPException(status_code=404, detail="Štítek není k dispozici")
+
+    packet_id = complaint.tracking_number
+    if complaint.shipping_label_url and "packetId=" in complaint.shipping_label_url:
+        packet_id = complaint.shipping_label_url.split("packetId=")[-1]
+
+    try:
+        async with ZasilkovnaClient() as client:
+            pdf_data = await client.get_label_pdf(packet_id)
+        return Response(
+            content=pdf_data,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"inline; filename=stitek-{code}.pdf"},
+        )
+    except ZasilkovnaError as exc:
+        raise HTTPException(status_code=502, detail=f"Zásilkovna error: {exc}")
+    except Exception as exc:
+        logger.error("download_complaint_label failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Nepodařilo se stáhnout štítek")
+
+
 # --------------- Track complaint ---------------
 
 
