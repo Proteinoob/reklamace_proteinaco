@@ -19,9 +19,11 @@ COUPON_TEMPLATE = "04a9b7ac-869c-11e9-beb1-002590dad85e"
 
 
 def _generate_coupon_code(complaint_code: str) -> str:
-    """Generate a unique coupon code like RK-RE-2026-0001-A3X."""
-    suffix = "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(3))
-    return f"RK-{complaint_code}-{suffix}"
+    """Generate a unique coupon code, max 16 chars. E.g. RK-0001-A3X7."""
+    # Extract the number part from RE-2026-0001
+    num_part = complaint_code.split("-")[-1] if "-" in complaint_code else complaint_code[-4:]
+    suffix = "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(4))
+    return f"RK-{num_part}-{suffix}"
 
 
 def has_coupon_for_order(order_code: str, db: Session) -> str | None:
