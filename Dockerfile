@@ -11,4 +11,4 @@ RUN mkdir -p uploads/complaints
 
 EXPOSE 8040
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8040"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8040", "--workers", "4"]
