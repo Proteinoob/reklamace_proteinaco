@@ -85,11 +85,10 @@ async def create_coupon(
                 }
             },
         )
-        resp.raise_for_status()
         data = resp.json()
 
-        if data.get("errors"):
-            logger.error("Shoptet coupon creation errors: %s", data["errors"])
+        if not resp.is_success or data.get("errors"):
+            logger.error("Shoptet coupon creation failed (HTTP %s): %s", resp.status_code, data.get("errors"))
             return None
 
         logger.info("Coupon %s created for complaint %s (%.2f CZK)", coupon_code, complaint_code, amount)
