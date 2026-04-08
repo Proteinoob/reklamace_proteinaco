@@ -806,6 +806,7 @@ def get_complaint_by_code(
         items=items,
         photos=photos,
         status_history=status_history,
+        coupon_code=complaint.coupon_code,
         created_at=complaint.created_at or datetime.now(timezone.utc),
     )
 
