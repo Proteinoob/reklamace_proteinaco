@@ -176,6 +176,7 @@ async def create_complaint(
     code = generate_complaint_code(db)
 
     # 3. Create complaint record
+    resolution_value = request.items[0].preferred_resolution.value
     complaint = Complaint(
         code=code,
         order_code=request.order_code,
@@ -184,7 +185,8 @@ async def create_complaint(
         customer_phone=request.phone,
         bank_account=request.bank_account,
         status=ComplaintStatus.NEW.value,
-        preferred_resolution=request.items[0].preferred_resolution.value,
+        preferred_resolution=resolution_value,
+        admin_note=f"Zákazník požaduje: {request.resolution_note}" if request.resolution_note else None,
     )
     db.add(complaint)
     db.flush()  # get complaint.id
