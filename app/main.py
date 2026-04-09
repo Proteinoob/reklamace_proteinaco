@@ -36,7 +36,17 @@ app = FastAPI(
 )
 
 # CORS
-_default_cors = ",".join(f"http://localhost:{p}" for p in [8000, 8040])
+_default_cors = ",".join([
+    "http://localhost:8000",
+    "http://localhost:8040",
+    "https://admin.proteinaco.com",
+    "https://reklamace.proteinaco.com",
+    "https://www.proteinaco.cz",
+    "https://www.proteinaco.sk",
+    "https://www.proteinaco.hu",
+    "https://www.proteinaco.pl",
+    "https://www.proteinaco.ro",
+])
 _cors_origins = os.getenv("CORS_ORIGINS", _default_cors).split(",")
 app.add_middleware(
     CORSMiddleware,
