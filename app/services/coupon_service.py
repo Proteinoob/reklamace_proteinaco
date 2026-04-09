@@ -58,34 +58,28 @@ async def create_coupon(
         return existing
 
     coupon_code = _generate_coupon_code(complaint_code)
-    # Round amount to 2 decimals
-    amount_str = f"{amount:.2f}"
 
-    # Valid for 90 days
-    valid_to = (datetime.now(timezone.utc) + timedelta(days=90)).strftime("%Y-%m-%d")
+    # 15% discount, single-use, no expiration
+    DISCOUNT_PERCENT = 15
+    # Shoptet uses "ratio" for percentual discounts: 0.85 = 15% off
+    ratio_str = f"{(100 - DISCOUNT_PERCENT) / 100:.4f}"
 
     client = shoptet_client or ShoptetClient()
     try:
         http = await client._get_client()
+        coupon_data = {
+            "code": coupon_code,
+            "discountType": "percentual",
+            "ratio": ratio_str,
+            "reusable": False,
+            "remark": f"Reklamace {complaint_code}, obj. {order_code}",
+            "template": COUPON_TEMPLATE,
+            "shippingPrice": "beforeDiscount",
+        }
+
         resp = await http.post(
             "/api/discount-coupons",
-            json={
-                "data": {
-                    "coupons": [
-                        {
-                            "code": coupon_code,
-                            "discountType": "fixed",
-                            "amount": amount_str,
-                            "currency": "CZK",
-                            "reusable": False,
-                            "validTo": valid_to,
-                            "remark": f"Reklamace {complaint_code}, obj. {order_code}",
-                            "template": COUPON_TEMPLATE,
-                            "shippingPrice": "beforeDiscount",
-                        }
-                    ]
-                }
-            },
+            json={"data": {"coupons": [coupon_data]}},
         )
         data = resp.json()
 
@@ -93,7 +87,7 @@ async def create_coupon(
             logger.error("Shoptet coupon creation failed (HTTP %s): %s", resp.status_code, data.get("errors"))
             return None
 
-        logger.info("Coupon %s created for complaint %s (%.2f CZK)", coupon_code, complaint_code, amount)
+        logger.info("Coupon %s created for complaint %s (15%% off)", coupon_code, complaint_code)
         return coupon_code
 
     except Exception as exc:
