@@ -1101,6 +1101,14 @@
                     <div class="form-group">
                         <div class="radio-group">${resolutionHtml}</div>
                     </div>
+
+                    ${state.preferredResolution === 'other' ? `
+                    <div class="form-group">
+                        <label for="resolution-note">Upřesněte požadované řešení *</label>
+                        <textarea id="resolution-note" rows="2"
+                                  placeholder="Popište jaké řešení byste preferoval/a...">${escapeHtml(state.resolutionNote || '')}</textarea>
+                    </div>
+                    ` : ''}
                     ` : ''}
 
                     <div class="section-title">Kontaktní údaje</div>
