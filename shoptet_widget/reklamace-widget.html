@@ -1152,13 +1152,11 @@
                 <div class="card">
                     <h3>Co bude dál:</h3>
 
-                    ${result.instructions ? `
-                    <div class="alert alert-info" style="margin-bottom:20px;">
-                        ${escapeHtml(result.instructions)}
-                    </div>
-                    ` : ''}
-
                     ${result.label_url ? `
+                    <div class="alert alert-info" style="margin-bottom:20px;">
+                        Vaši ${typeLabel} jsme přijali. Zašlete nám prosím reklamované zboží.
+                    </div>
+
                     <ol class="steps-list">
                         <li>
                             Stáhněte přepravní štítek<br>
@@ -1173,6 +1171,10 @@
 
                     <div class="alert alert-info" style="margin-top:16px; font-size:0.9rem;">
                         Štítek není nutné tisknout — na pobočce Zásilkovny stačí nahlásit číslo pod čárovým kódem.
+                    </div>
+                    ` : result.instructions ? `
+                    <div class="alert alert-info" style="margin-bottom:20px;">
+                        ${escapeHtml(result.instructions)}
                     </div>
                     ` : `
                     <ol class="steps-list">
