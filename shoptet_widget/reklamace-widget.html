@@ -1483,6 +1483,9 @@
             if (problemDescEl) problemDescEl.addEventListener('input', (e) => { state.complaintProblemDesc = e.target.value; });
             if (discoveryDateEl) discoveryDateEl.addEventListener('input', (e) => { state.complaintDiscoveryDate = e.target.value; });
             if (dosesTakenEl) dosesTakenEl.addEventListener('input', (e) => { state.complaintDosesTaken = e.target.value; });
+
+            const resolutionNoteEl = document.getElementById('resolution-note');
+            if (resolutionNoteEl) resolutionNoteEl.addEventListener('input', (e) => { state.resolutionNote = e.target.value; });
         }
 
         /* ===== Action handlers ===== */
