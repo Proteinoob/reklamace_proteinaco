@@ -1279,7 +1279,7 @@
                     </div>
                     ` : ''}
 
-                    ${data.code && !data.coupon_code ? `
+                    ${(isReturn || data.has_label) && !data.coupon_code ? `
                     <div style="margin-bottom:20px;">
                         <a href="/api/v1/customer/${isReturn ? 'returns' : 'complaints'}/${encodeURIComponent(data.code)}/label"
                            class="btn btn-secondary" target="_blank"
