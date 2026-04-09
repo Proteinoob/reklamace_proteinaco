@@ -28,6 +28,7 @@ class ComplaintCreateRequest(BaseModel):
     name: str
     phone: Optional[str] = None
     bank_account: Optional[str] = None
+    resolution_note: Optional[str] = None
     items: list[ComplaintItemRequest]
 
     @field_validator("items")
