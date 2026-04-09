@@ -41,14 +41,12 @@ def has_coupon_for_order(order_code: str, db: Session) -> str | None:
 async def create_coupon(
     complaint_code: str,
     order_code: str,
-    amount: float,
     db: Session,
     shoptet_client: ShoptetClient | None = None,
 ) -> str | None:
-    """Create a Shoptet discount coupon for a complaint.
+    """Create a 15% Shoptet discount coupon for a complaint.
 
-    Returns coupon code or None on failure.
-    Enforces 1 coupon per order_code.
+    Single-use, no expiration, 1 coupon per order_code.
     """
     # Check if coupon already exists for this order
     existing = has_coupon_for_order(order_code, db)
