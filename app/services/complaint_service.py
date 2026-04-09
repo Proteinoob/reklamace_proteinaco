@@ -295,6 +295,12 @@ async def create_complaint(
             "Produkt si můžete ponechat. Po posouzení reklamace vám "
             "zašleme slevový kupón na další nákup."
         )
+    elif resolution == "missing_product":
+        instructions = (
+            f"Vaši reklamaci {code} jsme přijali. "
+            "Prověříme chybějící produkt v objednávce a budeme vás "
+            "kontaktovat s řešením."
+        )
     else:
         instructions = (
             f"Vaši reklamaci {code} jsme přijali. "

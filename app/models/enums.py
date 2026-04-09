@@ -31,4 +31,5 @@ class PreferredResolution(str, enum.Enum):
     DISCOUNT = "discount"
     NEW_PRODUCT = "new_product"
     REFUND = "refund"
+    MISSING_PRODUCT = "missing_product"
     OTHER = "other"
