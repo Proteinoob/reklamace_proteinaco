@@ -121,6 +121,7 @@ class ComplaintTrackingResponse(BaseModel):
     photos: list[ComplaintPhotoDetail]
     status_history: list[StatusHistoryEntry]
     coupon_code: Optional[str] = None
+    has_label: bool = False
     created_at: datetime
 
 
