@@ -808,6 +808,7 @@ def get_complaint_by_code(
         photos=photos,
         status_history=status_history,
         coupon_code=complaint.coupon_code,
+        has_label=bool(complaint.tracking_number),
         created_at=complaint.created_at or datetime.now(timezone.utc),
     )
 
