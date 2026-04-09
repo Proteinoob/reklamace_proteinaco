@@ -534,14 +534,9 @@ async def approve_complaint(
     elif resolution == PreferredResolution.DISCOUNT:
         # Create Shoptet discount coupon (1 per order)
         from app.services.coupon_service import create_coupon
-        total_value = sum(
-            (item.unit_price or 0) * (item.quantity or 1)
-            for item in complaint.items
-        )
         coupon_code = await create_coupon(
             complaint_code=complaint.code,
             order_code=complaint.order_code,
-            amount=total_value,
             db=db,
         )
         if coupon_code:
